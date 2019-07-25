@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tcc_ubs/ui/LoginScreen.dart';
+import 'package:tcc_ubs/theme/theme.dart' as Theme;
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -11,6 +12,8 @@ class _HomeState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   AnimationController _animationController;
   Animation<double> _animation;
+
+
 
   @override
   void initState() {
@@ -28,11 +31,14 @@ class _HomeState extends State<SplashScreen>
 
     _animationController.forward();
 
+    /*
     //Function that goes to another page and user can't go back
     new Future.delayed(const Duration(seconds: 3), () {
       Navigator.of(context).pushReplacement(new MaterialPageRoute(
           builder: (BuildContext context) => LoginScreen()));
     });
+
+    */
   }
 
   @override
@@ -41,15 +47,12 @@ class _HomeState extends State<SplashScreen>
     _animationController.dispose();
   }
 
-  static Color primaryColor = Color(0xFF52B9E7);
-  static Color secondaryColor = Color(0xFF52d2e7);
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setPreferredOrientations(
-        [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
-    SystemChrome.setSystemUIOverlayStyle(
-        SystemUiOverlayStyle(systemNavigationBarColor: Colors.red));
+
+    Theme.Settings.orientation;
+    Theme.Settings.statusBar;
 
     return Scaffold(
         appBar: null,
@@ -58,8 +61,7 @@ class _HomeState extends State<SplashScreen>
           children: <Widget>[
             Container(
               decoration: BoxDecoration(
-                gradient:
-                    LinearGradient(colors: [primaryColor, primaryColor]),
+                gradient: Theme.ColorsTheme.gradient,
               ),
             ),
             ScaleTransition(

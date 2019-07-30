@@ -1,30 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:scoped_model/scoped_model.dart';
+import 'package:tcc_ubs/models/user_model.dart';
 import 'package:tcc_ubs/theme/theme.dart' as Theme;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tcc_ubs/ui/RegisterScreen.dart';
+import 'package:flushbar/flushbar.dart';
+import 'package:tcc_ubs/ui/HomeScreen.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
 
-bool _obscureTextLogin = true;
-final _formKey = GlobalKey<FormState>();
-
-final googleSignIn = GoogleSignIn();
-
 class _LoginScreenState extends State<LoginScreen> {
+  bool _alwaysValidate = false;
+  bool _obscureTextLogin = true;
+  final _formKey = GlobalKey<FormState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     Theme.Settings.orientation;
     Theme.Settings.statusBar;
 
     return Scaffold(
+        key: _scaffoldKey,
         appBar: null,
         body: SingleChildScrollView(
           child: Container(
               width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height >= 800
+                  ? MediaQuery.of(context).size.height
+                  : 800,
               decoration: BoxDecoration(gradient: Theme.ColorsTheme.gradient),
               child: SafeArea(
                 minimum: EdgeInsets.only(top: 30),
@@ -82,9 +92,9 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                     ),
                     _buildOr(),
-                    _buildLoginButtons(),
+                    _buildSocialLoginButtons(),
                     Padding(
-                      padding: EdgeInsets.only(top: 35,bottom: 20),
+                      padding: EdgeInsets.only(top: 35),
                       child: Center(
                         child: Text(
                           "Entrar como convidado",
@@ -117,17 +127,26 @@ class _LoginScreenState extends State<LoginScreen> {
                 width: 300.0,
                 child: Column(
                   children: <Widget>[
-                    Form(
+                    ScopedModelDescendant<UserModel>(
+                        builder: (context, child, model) {
+                      if (model.isLoading) {
+                        return Center(
+                          child: Container(
+                            padding: EdgeInsets.all(100),
+                            child: CircularProgressIndicator(),
+                          )
+                        );
+                      }
+                      return Form(
+                        autovalidate: _alwaysValidate,
                         key: _formKey,
                         child: Column(
                           children: <Widget>[
                             Padding(
                               padding: EdgeInsets.fromLTRB(25, 20, 25, 20),
                               child: TextFormField(
-                                validator: (text) {
-                                  if (text.isEmpty || !text.contains("@"))
-                                    return "Email inválido";
-                                },
+                                controller: _emailController,
+                                validator: _validateEmail,
                                 keyboardType: TextInputType.emailAddress,
                                 textCapitalization: TextCapitalization.words,
                                 style: TextStyle(
@@ -151,10 +170,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             Padding(
                               padding: EdgeInsets.fromLTRB(25, 20, 25, 15),
                               child: TextFormField(
-                                  validator: (text) {
-                                    if (text.isEmpty || text.length < 6)
-                                      return "Senha inválida";
-                                  },
+                                  controller: _passwordController,
+                                  validator: _validatePassword,
                                   obscureText: _obscureTextLogin,
                                   keyboardType: TextInputType.text,
                                   textCapitalization: TextCapitalization.words,
@@ -182,40 +199,53 @@ class _LoginScreenState extends State<LoginScreen> {
                                         ),
                                       ))),
                             ),
+                            Container(
+                                margin: EdgeInsets.only(top: 5, bottom: 20),
+                                decoration: new BoxDecoration(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(5.0)),
+                                  gradient: new LinearGradient(
+                                      colors: [
+                                        Theme.ColorsTheme.secondaryColor,
+                                        Theme.ColorsTheme.primaryColor
+                                      ],
+                                      begin: const FractionalOffset(0.2, 0.2),
+                                      end: const FractionalOffset(1.0, 1.0),
+                                      stops: [0.0, 1.0],
+                                      tileMode: TileMode.clamp),
+                                ),
+                                child: MaterialButton(
+                                  highlightColor: Colors.transparent,
+                                  splashColor: Theme.ColorsTheme.primaryColor,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 10.0, horizontal: 42.0),
+                                    child: Text(
+                                      "LOGIN",
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 20.0,
+                                          fontFamily: "WorkSansBold"),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    if (_formKey.currentState.validate()) {
+                                      model.signIn(
+                                          email: _emailController.text,
+                                          onFail: _onFail,
+                                          onSucess: _onSucess,
+                                          pass: _passwordController.text);
+                                    } else {
+                                      setState(() {
+                                        _alwaysValidate = true;
+                                      });
+                                    }
+                                  },
+                                ))
                           ],
-                        )),
-                    Container(
-                        margin: EdgeInsets.only(top: 5, bottom: 20),
-                        decoration: new BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                          gradient: new LinearGradient(
-                              colors: [
-                                Theme.ColorsTheme.secondaryColor,
-                                Theme.ColorsTheme.primaryColor
-                              ],
-                              begin: const FractionalOffset(0.2, 0.2),
-                              end: const FractionalOffset(1.0, 1.0),
-                              stops: [0.0, 1.0],
-                              tileMode: TileMode.clamp),
                         ),
-                        child: MaterialButton(
-                          highlightColor: Colors.transparent,
-                          splashColor: Theme.ColorsTheme.primaryColor,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 10.0, horizontal: 42.0),
-                            child: Text(
-                              "LOGIN",
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20.0,
-                                  fontFamily: "WorkSansBold"),
-                            ),
-                          ),
-                          onPressed: () {
-                            if (_formKey.currentState.validate()) {}
-                          },
-                        ))
+                      );
+                    }),
                   ],
                 ),
               ),
@@ -288,7 +318,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildLoginButtons() {
+  Widget _buildSocialLoginButtons() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
@@ -330,9 +360,51 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  String _validateEmail(String value) {
+    if (value.isEmpty) {
+      return "Preencha o campo";
+    } else {
+      return null;
+    }
+  }
+
+  String _validatePassword(String value) {
+    if (value.isEmpty) {
+      return "Preencha o campo";
+    } else {
+      return null;
+    }
+  }
+
   void _toggleLogin() {
     setState(() {
       _obscureTextLogin = !_obscureTextLogin;
     });
+  }
+
+  void _onFail() {
+    Flushbar(
+      animationDuration: Duration(milliseconds: 600),
+      icon: Icon(
+        FontAwesomeIcons.exclamation,
+        color: Colors.white,
+        size: 26,
+      ),
+      backgroundColor: Colors.red,
+      flushbarStyle: FlushbarStyle.GROUNDED,
+      messageText: Text(
+        "Falha ao entrar",
+        textAlign: TextAlign.center,
+        style: TextStyle(
+            color: Colors.white, fontSize: 20, fontFamily: "WorkSansSemiBold"),
+      ),
+      duration: Duration(seconds: 3),
+      flushbarPosition: FlushbarPosition.TOP,
+    ).show(context);
+  }
+
+  void _onSucess() {
+    Navigator.of(context)
+        .pushReplacement(MaterialPageRoute(builder: (context) => HomeScreen()));
   }
 }

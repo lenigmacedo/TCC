@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "65204924274",
+    "firebase_url": "https://tccubs.firebaseio.com",
+    "project_id": "tccubs",
+    "storage_bucket": "tccubs.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:65204924274:android:6983e1623532b427",
+        "android_client_info": {
+          "package_name": "br.com.lennyk.tcc_ubs"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "65204924274-ibp0v7cs8oucoefbc2p66idjf5aps8k9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.com.lennyk.tcc_ubs",
+            "certificate_hash": "4a6c7f7313b9e09c533e5f1a105f77dc7705b2c3"
+          }
+        },
+        {
+          "client_id": "65204924274-0da03t9mgbkmbskui1opvu8qoh0d7mud.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrhoQNyCwhhuZwcVW-L2jZHoWZadv6N4I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "65204924274-0da03t9mgbkmbskui1opvu8qoh0d7mud.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

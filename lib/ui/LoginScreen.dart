@@ -6,6 +6,9 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tcc_ubs/ui/RegisterScreen.dart';
 import 'package:flushbar/flushbar.dart';
 import 'package:tcc_ubs/ui/HomeScreen.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -131,11 +134,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         builder: (context, child, model) {
                       if (model.isLoading) {
                         return Center(
-                          child: Container(
-                            padding: EdgeInsets.all(100),
-                            child: CircularProgressIndicator(),
-                          )
-                        );
+                            child: Container(
+                          padding: EdgeInsets.all(100),
+                          child: CircularProgressIndicator(),
+                        ));
                       }
                       return Form(
                         autovalidate: _alwaysValidate,
@@ -148,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 controller: _emailController,
                                 validator: _validateEmail,
                                 keyboardType: TextInputType.emailAddress,
-                                textCapitalization: TextCapitalization.words,
+                                textCapitalization: TextCapitalization.none,
                                 style: TextStyle(
                                     fontFamily: "WorkSansRegular",
                                     fontSize: 18,
@@ -325,7 +327,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Padding(
           padding: EdgeInsets.only(top: 15.0, right: 40.0),
           child: GestureDetector(
-            onTap: () {},
+            onTap: signInWithFacebook,
             child: Container(
               padding: const EdgeInsets.all(15.0),
               decoration: new BoxDecoration(
@@ -342,7 +344,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Padding(
           padding: EdgeInsets.only(top: 10.0),
           child: GestureDetector(
-            onTap: () {},
+            onTap: _loginWithGoogle,
             child: Container(
               padding: const EdgeInsets.all(15.0),
               decoration: new BoxDecoration(
@@ -358,6 +360,105 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ],
     );
+  }
+
+  GoogleSignIn _googleSignIn = GoogleSignIn();
+  FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Future<Null> _loginWithGoogle() async {
+    GoogleSignInAccount user = _googleSignIn.currentUser;
+    if (user == null) {
+      user = await _googleSignIn.signIn();
+    }
+
+    if (await _auth.currentUser() == null) {
+      GoogleSignInAuthentication credentials =
+          await _googleSignIn.currentUser.authentication;
+
+      await _auth.signInWithCredential(GoogleAuthProvider.getCredential(
+          idToken: credentials.idToken, accessToken: credentials.accessToken));
+    }
+
+    if (user != null) {
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => HomeScreen()));
+    }
+  }
+
+  FacebookLogin fbLogin = FacebookLogin();
+
+  Future signInWithFacebook() async {
+    /*
+    final FacebookLoginResult _facebookLoginResult =
+        await _facebookLogin.logInWithReadPermissions(['email']);
+    
+    final FacebookAccessToken accessToken = _facebookLoginResult.accessToken;
+
+    AuthCredential credential =
+        FacebookAuthProvider.getCredential(accessToken: accessToken.token);
+
+    FirebaseUser user;
+    user = await _auth.signInWithCredential(credential);
+    
+
+    var fbLogin = FacebookLogin();
+
+    var result = await fbLogin.logInWithReadPermissions(['email']);
+
+    if (result.status == FacebookLoginStatus.loggedIn) {
+      FacebookAccessToken myToken = result.accessToken;
+      AuthCredential credential =
+          FacebookAuthProvider.getCredential(accessToken: myToken.token);
+      var user = await FirebaseAuth.instance.signInWithCredential(credential);
+      
+
+
+    final facebookLogin = FacebookLogin();
+    final result = await facebookLogin.logInWithReadPermissions(['email']);
+
+    switch (result.status) {
+      case FacebookLoginStatus.loggedIn:
+        print("foi");
+        FacebookAccessToken myToken = result.accessToken;
+        AuthCredential credential =
+        FacebookAuthProvider.getCredential(accessToken: myToken.token);
+        var user = await FirebaseAuth.instance.signInWithCredential(credential);
+        break;
+      case FacebookLoginStatus.cancelledByUser:
+        print("cancelou");
+        break;
+      case FacebookLoginStatus.error:
+        print("erro");
+    }
+
+    */
+
+    fbLogin.logInWithReadPermissions(['email']).then((result) {
+      switch (result.status) {
+        case FacebookLoginStatus.loggedIn:
+          AuthCredential credential = FacebookAuthProvider.getCredential(
+              accessToken: result.accessToken.token);
+          FirebaseAuth.instance
+              .signInWithCredential(credential)
+              .then((signedInUser) {
+            print("Signed in as ${signedInUser.displayName}");
+            Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => HomeScreen()));
+          }).catchError((e) {
+            print(e);
+          });
+          break;
+        case FacebookLoginStatus.error:
+          _buildFlushbar("Erro ao logar com Facebook",1);
+          break;
+
+        case FacebookLoginStatus.cancelledByUser:
+          _buildFlushbar("Erro ao logar com Facebook",1);
+          break;
+      }
+    }).catchError((e) {
+      print(e);
+    });
   }
 
   String _validateEmail(String value) {
@@ -406,5 +507,25 @@ class _LoginScreenState extends State<LoginScreen> {
   void _onSucess() {
     Navigator.of(context)
         .pushReplacement(MaterialPageRoute(builder: (context) => HomeScreen()));
+  }
+
+  Future<void> _buildFlushbar(String text, int duration) {
+    return Flushbar(
+      animationDuration: Duration(milliseconds: 500),
+      icon: Icon(
+        FontAwesomeIcons.exclamation,
+        color: Colors.white,
+        size: 26,
+      ),
+      backgroundColor: Colors.red,
+      flushbarStyle: FlushbarStyle.GROUNDED,
+      messageText: Text(text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+            color: Colors.white, fontSize: 20, fontFamily: "WorkSansSemiBold"),
+      ),
+      duration: Duration(seconds: duration),
+      flushbarPosition: FlushbarPosition.TOP,
+    ).show(context);
   }
 }

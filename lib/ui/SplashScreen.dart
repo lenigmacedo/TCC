@@ -1,9 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:scoped_model/scoped_model.dart';
-import 'package:tcc_ubs/models/user_model.dart';
-import 'package:tcc_ubs/ui/HomeScreen.dart';
 import 'package:tcc_ubs/ui/LoginScreen.dart';
 import 'package:tcc_ubs/theme/theme.dart' as Theme;
 
@@ -31,6 +26,11 @@ class _HomeState extends State<SplashScreen>
       });
 
     _animationController.forward();
+
+    Future.delayed(Duration(seconds: 2)).then((a) {
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => LoginScreen()));
+    });
   }
 
   @override
@@ -44,55 +44,25 @@ class _HomeState extends State<SplashScreen>
     Theme.Settings.orientation;
     Theme.Settings.statusBar;
 
-    return ScopedModelDescendant<UserModel>(builder: (context, child, model) {
-      if (!model.isLoggedIn()) {
-        Future.delayed(const Duration(seconds: 2), () {
-          Navigator.of(context).pushReplacement(new MaterialPageRoute(
-              builder: (BuildContext context) => LoginScreen()));
-        });
-      } else {
-        Future.delayed(const Duration(seconds: 2), () {
-          Navigator.of(context).pushReplacement(new MaterialPageRoute(
-              builder: (BuildContext context) => HomeScreen()));
-        });
-      }
-
-      return Scaffold(
-          appBar: null,
-          body: Stack(
-            alignment: Alignment.center,
-            children: <Widget>[
-              Container(
-                decoration: BoxDecoration(
-                  gradient: Theme.ColorsTheme.gradient,
-                ),
+    return Scaffold(
+        appBar: null,
+        body: Stack(
+          alignment: Alignment.center,
+          children: <Widget>[
+            Container(
+              decoration: BoxDecoration(
+                gradient: Theme.ColorsTheme.gradient,
               ),
-              ScaleTransition(
-                scale: _animation,
-                child: Image.asset(
-                  "assets/images/logo.png",
-                  width: 250,
-                  height: 250,
-                ),
+            ),
+            ScaleTransition(
+              scale: _animation,
+              child: Image.asset(
+                "assets/images/logo.png",
+                width: 250,
+                height: 250,
               ),
-            ],
-          ));
-    });
-
-/*
-
-return StreamBuilder<FirebaseUser>(
-      stream: FirebaseAuth.instance.onAuthStateChanged,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.active) {
-          FirebaseUser user = snapshot.data;
-          if (user == null) {
-            return LoginScreen();
-          }else if (user != null){
-            return HomeScreen();
-          }
-        } else {
-
- */
+            ),
+          ],
+        ));
   }
 }

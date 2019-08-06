@@ -5,7 +5,7 @@ import 'package:tcc_ubs/models/user_model.dart';
 import 'package:tcc_ubs/theme/theme.dart' as Theme;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:email_validator/email_validator.dart';
-import 'package:cpf_cnpj_validator/cpf_validator.dart';
+import 'package:tcc_ubs/ui/HomeScreen.dart';
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -35,7 +35,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     Theme.Settings.statusBar;
 
     return Scaffold(
-        appBar:null,
+        appBar: null,
         body: SingleChildScrollView(
           child: Container(
             width: MediaQuery.of(context).size.width,
@@ -86,7 +86,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             builder: (context, child, model) {
                               if (model.isLoading) {
                                 return Center(
-                                  child:Container(
+                                  child: Container(
                                     padding: EdgeInsets.all(100),
                                     child: CircularProgressIndicator(),
                                   ),
@@ -272,7 +272,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                                   "email":
                                                       _emailController.text,
                                                 };
-
                                                 model.signUp(
                                                     userData: userData,
                                                     pass: _passwordController
@@ -301,7 +300,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  void _onSucess(){
+  void _onSucess() {
     Flushbar(
       animationDuration: Duration(milliseconds: 600),
       icon: Icon(
@@ -320,15 +319,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
       duration: Duration(seconds: 2),
       flushbarPosition: FlushbarPosition.TOP,
     ).show(context);
-    _passwordController.text = "";
-    _emailController.text = "";
-    _nameController.text = "";
-    Future.delayed(Duration(seconds: 2)).then((a){
-      Navigator.of(context).pop();
+
+    Future.delayed(Duration(seconds: 1)).then((a) {
+      UserModel().signIn(
+          email: _emailController.text,
+          pass: _passwordController.text,
+          onSucess: _anoterSucess,
+          onFail: () {});
     });
   }
 
-  void _onFail(){
+  void _anoterSucess() {
+    Navigator.of(context)
+        .pushReplacement(MaterialPageRoute(builder: (context) => HomeScreen()));
+  }
+
+  void _onFail() {
     Flushbar(
       animationDuration: Duration(milliseconds: 600),
       icon: Icon(
@@ -365,24 +371,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return "Apenas letras";
     }
     return null;
-  }
-
-  String _validateCPF(String value) {
-    var validator = CPFValidator.isValid(value);
-
-    if (validator) {
-      return null;
-    } else {
-      return "CPF inválido";
-    }
-  }
-
-  String _validateEndereco(String value) {
-    if (value.isEmpty || value == " ") {
-      return "Endereço inválido";
-    } else {
-      return null;
-    }
   }
 
   String _validateEmail(String value) {

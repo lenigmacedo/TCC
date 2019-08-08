@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
           title: "Ubmedy",
           debugShowCheckedModeBanner: false,
-          home: HomeScreen()),
+          home: SplashScreen()),
     );
   }
 }

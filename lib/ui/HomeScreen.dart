@@ -26,6 +26,41 @@ class _HomeScreenState extends State<HomeScreen> {
     Theme.Settings.orientation;
 
     return Scaffold(
+        appBar: _page == 3
+            ? AppBar(
+                automaticallyImplyLeading: false,
+                backgroundColor: Theme.ColorsTheme.primaryColor,
+                elevation: 0,
+                actions: <Widget>[
+                  FlatButton(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(9)),
+                    highlightColor: Colors.transparent,
+                    splashColor: Colors.white54,
+                    child: Row(
+                      children: <Widget>[
+                        Text(
+                          "SAIR",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18.0,
+                              fontFamily: "WorkSansSemiBold"),
+                        ),
+                        Padding(
+                            padding: EdgeInsets.only(left: 20),
+                            child: Icon(
+                              FontAwesomeIcons.signOutAlt,
+                              color: Colors.white,
+                            ))
+                      ],
+                    ),
+                    onPressed: () {
+                      _showDialog();
+                    },
+                  ),
+                ],
+              )
+            : null,
         bottomNavigationBar: CurvedNavigationBar(
           animationCurve: Curves.decelerate,
           index: 0,
@@ -43,11 +78,13 @@ class _HomeScreenState extends State<HomeScreen> {
             setState(() {
               _page = index;
               _pageController.animateToPage(_page,
-                  duration: Duration(milliseconds: 500), curve: Curves.decelerate);
+                  duration: Duration(milliseconds: 500),
+                  curve: Curves.decelerate);
             });
           },
         ),
         body: PageView(
+          physics: NeverScrollableScrollPhysics(),
           controller: _pageController,
           children: <Widget>[
             _buildNearbyPlaces(context),
@@ -92,30 +129,37 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildProfile(BuildContext context) {
-    return ScopedModelDescendant<UserModel>(
-      builder: (context, child, model) {
-        FirebaseAuth.instance.currentUser().then((user) {
-          setState(() {
-            this._userName = user.displayName;
+    return SingleChildScrollView(
+      physics: MediaQuery.of(context).size.height >= 600
+          ? NeverScrollableScrollPhysics()
+          : AlwaysScrollableScrollPhysics(),
+      child: ScopedModelDescendant<UserModel>(
+        builder: (context, child, model) {
+          FirebaseAuth.instance.currentUser().then((user) {
+            setState(() {
+              this._userName = user.displayName;
+            });
           });
-        });
 
-        if (_userName == null) {
-          this._userName = model.userData["name"];
-        }
-        return Column(
-          children: <Widget>[
-            Container(
+          if (_userName == null) {
+            this._userName = model.userData["name"];
+          }
+          return Column(
+            mainAxisSize: MainAxisSize.max,
+            children: <Widget>[
+              Container(
                 width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height - 60,
+                height: MediaQuery.of(context).size.height >= 800
+                    ? MediaQuery.of(context).size.height - 60
+                    : 740,
                 color: Theme.ColorsTheme.primaryColor,
                 child: Column(
                   children: <Widget>[
                     Padding(
-                        padding: EdgeInsets.only(top: 60),
+                        padding: EdgeInsets.only(top: 10),
                         child: Container(
-                          width: 200,
-                          height: 200,
+                          width: 220,
+                          height: 220,
                           child: CircleAvatar(
                             backgroundColor: Colors.white,
                             radius: 20,
@@ -126,7 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         )),
                     Padding(
-                      padding: EdgeInsets.only(top: 40, bottom: 5),
+                      padding: EdgeInsets.only(top: 50, bottom: 5),
                       child: Text(
                         _userName,
                         style: TextStyle(
@@ -188,26 +232,100 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         onTap: () {},
                       ),
-                    )
+                    ),
                   ],
-                )),
-          ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  void _showDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          elevation: 11,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          title: Text(
+            "SAIR",
+            style: TextStyle(
+              fontFamily: "WorkSansSemiBold",
+              fontSize: 22,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          content: Container(
+            height: 200,
+            width: 260,
+            child: Column(
+              children: <Widget>[
+                Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 25),
+                    child: Text(
+                      "Tem certeza que deseja sair?",
+                      style:
+                          TextStyle(fontFamily: "WorkSansMedium", fontSize: 20),
+                    )),
+                Container(
+                    margin: EdgeInsets.only(top: 10, bottom: 20),
+                    decoration: new BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                      gradient: new LinearGradient(
+                          colors: [
+                            Theme.ColorsTheme.secondaryColor,
+                            Theme.ColorsTheme.primaryColor
+                          ],
+                          begin: const FractionalOffset(0.2, 0.2),
+                          end: const FractionalOffset(1.0, 1.0),
+                          stops: [0.0, 1.0],
+                          tileMode: TileMode.clamp),
+                    ),
+                    child: MaterialButton(
+                      highlightColor: Colors.transparent,
+                      splashColor: Theme.ColorsTheme.primaryColor,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Text(
+                          "SAIR",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20.0,
+                              fontFamily: "WorkSansBold"),
+                        ),
+                      ),
+                      onPressed: () {
+                        UserModel().signOut();
+                        _googleSignIn.signOut();
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(
+                            builder: (context) => LoginScreen()));
+                      },
+                    )),
+                MaterialButton(
+                  highlightColor: Colors.transparent,
+                  splashColor: Colors.grey[200],
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Text(
+                      "Cancelar",
+                      style: TextStyle(
+                          fontSize: 20.0, fontFamily: "WorkSansMedium"),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                )
+              ],
+            ),
+          ),
         );
       },
     );
   }
 }
-
-/*
-
- FlatButton(
-                  onPressed: () {
-                    model.signOut();
-                    _googleSignIn.signOut();
-                    Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (context) => LoginScreen()));
-                  },
-                  child: Text("Sair"))
-
-
- */

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:tcc_ubs/models/user_model.dart';
@@ -20,9 +21,11 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscureTextLogin = true;
   final _formKey = GlobalKey<FormState>();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _formResetKey = GlobalKey<FormState>();
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _emailControllerReset = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -81,17 +84,19 @@ class _LoginScreenState extends State<LoginScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         Padding(
-                          padding: EdgeInsets.only(top: 15),
-                          child: Text(
-                            "Esqueceu a senha?",
-                            style: TextStyle(
-                                fontFamily: "WorkSansRegular",
-                                color: Colors.white,
-                                fontSize: 15,
-                                decoration: TextDecoration.underline,
-                                decorationStyle: TextDecorationStyle.solid),
-                          ),
-                        ),
+                            padding: EdgeInsets.only(top: 15),
+                            child: GestureDetector(
+                              onTap: _showDialog,
+                              child: Text(
+                                "Esqueceu a senha?",
+                                style: TextStyle(
+                                    fontFamily: "WorkSansRegular",
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    decoration: TextDecoration.underline,
+                                    decorationStyle: TextDecorationStyle.solid),
+                              ),
+                            )),
                       ],
                     ),
                     _buildOr(),
@@ -321,44 +326,38 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Widget _buildSocialLoginButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Padding(
-          padding: EdgeInsets.only(top: 15.0, right: 40.0),
-          child: GestureDetector(
-            onTap: signInWithFacebook,
-            child: Container(
-              padding: const EdgeInsets.all(15.0),
-              decoration: new BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-              ),
-              child: new Icon(
-                FontAwesomeIcons.facebookF,
-                color: Theme.ColorsTheme.primaryColor,
-              ),
+    return Padding(
+      padding: EdgeInsets.only(top: 10.0),
+      child: GestureDetector(
+        onTap: _loginWithGoogle,
+        child: Container(
+            width: 150,
+            height: 50,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(5)),
+              color: Colors.white,
             ),
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.only(top: 10.0),
-          child: GestureDetector(
-            onTap: _loginWithGoogle,
-            child: Container(
-              padding: const EdgeInsets.all(15.0),
-              decoration: new BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white,
-              ),
-              child: new Icon(
-                FontAwesomeIcons.google,
-                color: Theme.ColorsTheme.primaryColor,
-              ),
-            ),
-          ),
-        ),
-      ],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.only(right: 10),
+                  child: Icon(
+                    FontAwesomeIcons.google,
+                    color: Theme.ColorsTheme.primaryColor,
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(left: 10),
+                  child: Text(
+                    "Google",
+                    style:
+                        TextStyle(fontFamily: "WorkSansMedium", fontSize: 22),
+                  ),
+                )
+              ],
+            )),
+      ),
     );
   }
 
@@ -391,7 +390,7 @@ class _LoginScreenState extends State<LoginScreen> {
     /*
     final FacebookLoginResult _facebookLoginResult =
         await _facebookLogin.logInWithReadPermissions(['email']);
-    
+
     final FacebookAccessToken accessToken = _facebookLoginResult.accessToken;
 
     AuthCredential credential =
@@ -399,7 +398,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     FirebaseUser user;
     user = await _auth.signInWithCredential(credential);
-    
+
 
     var fbLogin = FacebookLogin();
 
@@ -410,7 +409,7 @@ class _LoginScreenState extends State<LoginScreen> {
       AuthCredential credential =
           FacebookAuthProvider.getCredential(accessToken: myToken.token);
       var user = await FirebaseAuth.instance.signInWithCredential(credential);
-      
+
 
 
     final facebookLogin = FacebookLogin();
@@ -449,16 +448,131 @@ class _LoginScreenState extends State<LoginScreen> {
           });
           break;
         case FacebookLoginStatus.error:
-          _buildFlushbar("Erro ao logar com Facebook",1);
+          _buildFlushbar("Erro ao logar com Facebook", 1, Colors.red);
           break;
 
         case FacebookLoginStatus.cancelledByUser:
-          _buildFlushbar("Erro ao logar com Facebook",1);
+          _buildFlushbar("Erro ao logar com Facebook", 1, Colors.red);
           break;
       }
     }).catchError((e) {
       print(e);
     });
+  }
+
+  void _showDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          elevation: 11,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          title: Text(
+            "Recuperar senha",
+            style: TextStyle(
+              fontFamily: "WorkSansMedium",
+              fontSize: 22,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          content: Container(
+            height: 182,
+            width: 260,
+            child: Column(
+              children: <Widget>[
+                Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 15),
+                    child: Form(
+                      autovalidate: _alwaysValidate,
+                      key: _formResetKey,
+                      child: TextFormField(
+                        validator: (email) {
+                          if (email.isEmpty) {
+                            return "Preencha o campo";
+                          }
+                          return '';
+                        },
+                        controller: _emailControllerReset,
+                        keyboardType: TextInputType.emailAddress,
+                        textCapitalization: TextCapitalization.none,
+                        style: TextStyle(
+                            fontFamily: "WorkSansRegular",
+                            fontSize: 18,
+                            color: Colors.black),
+                        decoration: InputDecoration(
+                          icon: Icon(
+                            FontAwesomeIcons.envelope,
+                            size: 24,
+                          ),
+                          border: InputBorder.none,
+                          hintText: "Email",
+                          hintStyle: TextStyle(
+                              fontFamily: "WorkSansSemiBold", fontSize: 18),
+                        ),
+                      ),
+                    )),
+                Container(
+                  width: 230,
+                  height: 1,
+                  color: Colors.grey,
+                ),
+                Container(
+                    margin: EdgeInsets.only(top: 31, bottom: 20),
+                    decoration: new BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                      gradient: new LinearGradient(
+                          colors: [
+                            Theme.ColorsTheme.secondaryColor,
+                            Theme.ColorsTheme.primaryColor
+                          ],
+                          begin: const FractionalOffset(0.2, 0.2),
+                          end: const FractionalOffset(1.0, 1.0),
+                          stops: [0.0, 1.0],
+                          tileMode: TileMode.clamp),
+                    ),
+                    child: MaterialButton(
+                      highlightColor: Colors.transparent,
+                      splashColor: Theme.ColorsTheme.primaryColor,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 10.0, horizontal: 20.0),
+                        child: Text(
+                          "RECUPERAR",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20.0,
+                              fontFamily: "WorkSansBold"),
+                        ),
+                      ),
+                      onPressed: () {
+                        if (_formResetKey.currentState.validate()) {
+                          _recoverPass(_emailControllerReset.text);
+                          _buildFlushbar("Confira seu email", 1,
+                              Theme.ColorsTheme.primaryColor);
+                          Future.delayed(Duration(milliseconds: 1500))
+                              .then((a) {
+                            Navigator.of(context).pop();
+                            _emailControllerReset.text = "";
+                          });
+                        } else {
+                          setState(() {
+                            _alwaysValidate = true;
+                          });
+                        }
+                      },
+                    ))
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  _recoverPass(String email) {
+    _auth.sendPasswordResetEmail(email: email);
   }
 
   String _validateEmail(String value) {
@@ -509,7 +623,7 @@ class _LoginScreenState extends State<LoginScreen> {
         .pushReplacement(MaterialPageRoute(builder: (context) => HomeScreen()));
   }
 
-  Future<void> _buildFlushbar(String text, int duration) {
+  Future<void> _buildFlushbar(String text, int duration, Color color) {
     return Flushbar(
       animationDuration: Duration(milliseconds: 500),
       icon: Icon(
@@ -517,9 +631,10 @@ class _LoginScreenState extends State<LoginScreen> {
         color: Colors.white,
         size: 26,
       ),
-      backgroundColor: Colors.red,
+      backgroundColor: color,
       flushbarStyle: FlushbarStyle.GROUNDED,
-      messageText: Text(text,
+      messageText: Text(
+        text,
         textAlign: TextAlign.center,
         style: TextStyle(
             color: Colors.white, fontSize: 20, fontFamily: "WorkSansSemiBold"),

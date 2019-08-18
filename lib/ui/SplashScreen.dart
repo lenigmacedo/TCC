@@ -1,4 +1,6 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:tcc_ubs/ui/HomeScreen.dart';
 import 'package:tcc_ubs/ui/LoginScreen.dart';
 import 'package:tcc_ubs/theme/theme.dart' as Theme;
 
@@ -28,9 +30,18 @@ class _HomeState extends State<SplashScreen>
     _animationController.forward();
 
     Future.delayed(Duration(seconds: 2)).then((a) {
+      _checkLogged();
+    });
+  }
+
+  _checkLogged() async {
+    if (await FirebaseAuth.instance.currentUser() == null) {
       Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context) => LoginScreen()));
-    });
+    } else if (await FirebaseAuth.instance.currentUser() != null) {
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => HomeScreen()));
+    }
   }
 
   @override

@@ -268,6 +268,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                                   .validate()) {
                                                 Map<String, dynamic> userData =
                                                     {
+                                                      "photoURL": "https://firebasestorage.googleapis.com/v0/b/tccubs.appspot.com/o/ABS.png?alt=media&token=36c108cf-dfdb-4808-8805-20ebb6842961",
                                                   "name": _nameController.text,
                                                   "email":
                                                       _emailController.text,

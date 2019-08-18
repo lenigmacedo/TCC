@@ -9,7 +9,6 @@ import 'package:flushbar/flushbar.dart';
 import 'package:tcc_ubs/ui/HomeScreen.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -382,82 +381,6 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (context) => HomeScreen()));
     }
-  }
-
-  FacebookLogin fbLogin = FacebookLogin();
-
-  Future signInWithFacebook() async {
-    /*
-    final FacebookLoginResult _facebookLoginResult =
-        await _facebookLogin.logInWithReadPermissions(['email']);
-
-    final FacebookAccessToken accessToken = _facebookLoginResult.accessToken;
-
-    AuthCredential credential =
-        FacebookAuthProvider.getCredential(accessToken: accessToken.token);
-
-    FirebaseUser user;
-    user = await _auth.signInWithCredential(credential);
-
-
-    var fbLogin = FacebookLogin();
-
-    var result = await fbLogin.logInWithReadPermissions(['email']);
-
-    if (result.status == FacebookLoginStatus.loggedIn) {
-      FacebookAccessToken myToken = result.accessToken;
-      AuthCredential credential =
-          FacebookAuthProvider.getCredential(accessToken: myToken.token);
-      var user = await FirebaseAuth.instance.signInWithCredential(credential);
-
-
-
-    final facebookLogin = FacebookLogin();
-    final result = await facebookLogin.logInWithReadPermissions(['email']);
-
-    switch (result.status) {
-      case FacebookLoginStatus.loggedIn:
-        print("foi");
-        FacebookAccessToken myToken = result.accessToken;
-        AuthCredential credential =
-        FacebookAuthProvider.getCredential(accessToken: myToken.token);
-        var user = await FirebaseAuth.instance.signInWithCredential(credential);
-        break;
-      case FacebookLoginStatus.cancelledByUser:
-        print("cancelou");
-        break;
-      case FacebookLoginStatus.error:
-        print("erro");
-    }
-
-    */
-
-    fbLogin.logInWithReadPermissions(['email']).then((result) {
-      switch (result.status) {
-        case FacebookLoginStatus.loggedIn:
-          AuthCredential credential = FacebookAuthProvider.getCredential(
-              accessToken: result.accessToken.token);
-          FirebaseAuth.instance
-              .signInWithCredential(credential)
-              .then((signedInUser) {
-            print("Signed in as ${signedInUser.displayName}");
-            Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => HomeScreen()));
-          }).catchError((e) {
-            print(e);
-          });
-          break;
-        case FacebookLoginStatus.error:
-          _buildFlushbar("Erro ao logar com Facebook", 1, Colors.red);
-          break;
-
-        case FacebookLoginStatus.cancelledByUser:
-          _buildFlushbar("Erro ao logar com Facebook", 1, Colors.red);
-          break;
-      }
-    }).catchError((e) {
-      print(e);
-    });
   }
 
   void _showDialog() {

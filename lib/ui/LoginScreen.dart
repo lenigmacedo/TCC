@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:tcc_ubs/models/user_model.dart';
 import 'package:tcc_ubs/theme/theme.dart' as Theme;
@@ -9,6 +9,7 @@ import 'package:flushbar/flushbar.dart';
 import 'package:tcc_ubs/ui/HomeScreen.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -21,10 +22,27 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _formResetKey = GlobalKey<FormState>();
+  final Geolocator geolocator = Geolocator();
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _emailControllerReset = TextEditingController();
+
+  _getPermission() async {
+    await PermissionHandler().requestPermissions([PermissionGroup.location]);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    geolocator.checkGeolocationPermissionStatus().then((status) {
+      if (status != GeolocationStatus.granted) {
+        _showPermission();
+        _getPermission();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -565,5 +583,75 @@ class _LoginScreenState extends State<LoginScreen> {
       duration: Duration(seconds: duration),
       flushbarPosition: FlushbarPosition.TOP,
     ).show(context);
+  }
+
+  void _showPermission() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          elevation: 11,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          title: Text(
+            "PERMISSÃO",
+            style: TextStyle(
+              fontFamily: "WorkSansSemiBold",
+              fontSize: 22,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          content: Container(
+            height: 180,
+            width: 260,
+            child: Column(
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.fromLTRB(10, 10, 10, 25),
+                  child: Text(
+                    "Para utilizar nosso app precisamos que o GPS esteja ativo",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontFamily: "WorkSansMedium", fontSize: 19, height: 1),
+                  ),
+                ),
+                Container(
+                    margin: EdgeInsets.only(top: 10, bottom: 20),
+                    decoration: new BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                      gradient: new LinearGradient(
+                          colors: [
+                            Theme.ColorsTheme.secondaryColor,
+                            Theme.ColorsTheme.primaryColor
+                          ],
+                          begin: const FractionalOffset(0.2, 0.2),
+                          end: const FractionalOffset(1.0, 1.0),
+                          stops: [0.0, 1.0],
+                          tileMode: TileMode.clamp),
+                    ),
+                    child: MaterialButton(
+                      highlightColor: Colors.transparent,
+                      splashColor: Theme.ColorsTheme.primaryColor,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                        child: Text(
+                          "OK",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20.0,
+                              fontFamily: "WorkSansBold"),
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(context);
+                      },
+                    ))
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }

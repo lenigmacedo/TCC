@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
@@ -27,6 +28,13 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = false;
   String _userName;
   File profilePick;
+  bool _alwaysValidate = false;
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
+
+  Geolocator geolocator = Geolocator();
+  Position userLocation;
+
   String url =
       "https://firebasestorage.googleapis.com/v0/b/tccubs.appspot.com/o/ABS.png?alt=media&token=36c108cf-dfdb-4808-8805-20ebb6842961";
 
@@ -42,6 +50,10 @@ class _HomeScreenState extends State<HomeScreen> {
       this.setState(() {
         _places = data;
       });
+    });
+
+    _getLocation().then((position) {
+      userLocation = position;
     });
   }
 
@@ -179,7 +191,9 @@ class _HomeScreenState extends State<HomeScreen> {
       height: MediaQuery.of(context).size.height - 60,
       color: Theme.ColorsTheme.primaryColor,
       child: Center(
-        child: Text("Partners"),
+        child: Text(userLocation != null
+            ? "${userLocation.latitude},${userLocation.longitude}"
+            : "Calma"),
       ),
     );
   }
@@ -191,15 +205,16 @@ class _HomeScreenState extends State<HomeScreen> {
           : AlwaysScrollableScrollPhysics(),
       child: ScopedModelDescendant<UserModel>(
         builder: (context, child, model) {
-          FirebaseAuth.instance.currentUser().then((user) {
-            setState(() {
-              this._userName = user.displayName;
-            });
-          });
+          this._userName = model.userData["name"];
 
           if (_userName == null) {
-            this._userName = model.userData["name"];
+            FirebaseAuth.instance.currentUser().then((user) {
+              setState(() {
+                this._userName = user.displayName;
+              });
+            });
           }
+
           return Column(
             mainAxisSize: MainAxisSize.max,
             children: <Widget>[
@@ -231,7 +246,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ))),
                           )),
                     ),
-                    Icon(FontAwesomeIcons.plusCircle),
                     Padding(
                       padding: EdgeInsets.only(top: 50, bottom: 5),
                       child: Text(
@@ -280,7 +294,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               fontSize: 22,
                               color: Colors.white),
                         ),
-                        onTap: () {},
+                        onTap: _dialogUserName,
                       ),
                     ),
                     Padding(
@@ -344,7 +358,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 Padding(
                     padding: EdgeInsets.fromLTRB(10, 10, 10, 25),
                     child: Text(
-                      "Tem certeza que \n deseja sair?",
+                      "Tem certeza que deseja sair?",
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                           fontFamily: "WorkSansMedium",
                           fontSize: 19,
@@ -413,6 +428,153 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<Position> _getLocation() async {
+    var currentLocation;
+    try {
+      currentLocation = await geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.best);
+    } catch (e) {
+      currentLocation = null;
+    }
+    return currentLocation;
+  }
+
+  void _dialogUserName() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          elevation: 11,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          title: Text(
+            "ALTERAR NOME",
+            style: TextStyle(
+              fontFamily: "WorkSansMedium",
+              fontSize: 22,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          content: Container(
+            height: 162,
+            width: 260,
+            child: Column(
+              children: <Widget>[
+                Padding(
+                    padding: EdgeInsets.fromLTRB(25, 0, 25, 15),
+                    child: Form(
+                      autovalidate: _alwaysValidate,
+                      key: _formKey,
+                      child: TextFormField(
+                        validator: _validateName,
+                        controller: _nameController,
+                        keyboardType: TextInputType.emailAddress,
+                        textCapitalization: TextCapitalization.none,
+                        style: TextStyle(
+                            fontFamily: "WorkSansRegular",
+                            fontSize: 18,
+                            color: Colors.black),
+                        decoration: InputDecoration(
+                          icon: Icon(
+                            FontAwesomeIcons.user,
+                            size: 24,
+                          ),
+                          border: InputBorder.none,
+                          hintText: "Nome",
+                          hintStyle: TextStyle(
+                              fontFamily: "WorkSansSemiBold", fontSize: 18),
+                        ),
+                      ),
+                    )),
+                Container(
+                  width: 230,
+                  height: 1,
+                  color: Colors.grey,
+                ),
+                Container(
+                    margin: EdgeInsets.only(top: 31, bottom: 20),
+                    decoration: new BoxDecoration(
+                      borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                      gradient: new LinearGradient(
+                          colors: [
+                            Theme.ColorsTheme.secondaryColor,
+                            Theme.ColorsTheme.primaryColor
+                          ],
+                          begin: const FractionalOffset(0.2, 0.2),
+                          end: const FractionalOffset(1.0, 1.0),
+                          stops: [0.0, 1.0],
+                          tileMode: TileMode.clamp),
+                    ),
+                    child: MaterialButton(
+                      highlightColor: Colors.transparent,
+                      splashColor: Theme.ColorsTheme.primaryColor,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 10.0, horizontal: 20.0),
+                        child: Text(
+                          "ALTERAR",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20.0,
+                              fontFamily: "WorkSansBold"),
+                        ),
+                      ),
+                      onPressed: () {
+                        if (_formKey.currentState.validate()) {
+                          _updateName();
+                          Navigator.pop(context);
+                        } else {
+                          setState(() {
+                            _alwaysValidate = true;
+                          });
+                        }
+                      },
+                    ))
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  _updateName() async {
+    String name = _nameController.text;
+
+    String userID = await FirebaseAuth.instance.currentUser().then((user) {
+      return user.uid;
+    });
+    Firestore.instance
+        .collection("users")
+        .document(userID)
+        .updateData({"name": name});
+
+    setState(() {
+      _userName = name;
+      Flushbar(
+        animationDuration: Duration(milliseconds: 500),
+        icon: Icon(
+          FontAwesomeIcons.exclamation,
+          color: Colors.white,
+          size: 26,
+        ),
+        backgroundColor: Theme.ColorsTheme.primaryColor,
+        flushbarStyle: FlushbarStyle.GROUNDED,
+        messageText: Text(
+          "Seu nome será atualizado no próximo login",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontFamily: "WorkSansSemiBold"),
+        ),
+        duration: Duration(seconds: 2),
+        flushbarPosition: FlushbarPosition.TOP,
+      ).show(context);
+    });
+  }
+
   Future getImage() async {
     File img = await ImagePicker.pickImage(
         source: ImageSource.gallery, imageQuality: 10);
@@ -463,5 +625,17 @@ class _HomeScreenState extends State<HomeScreen> {
         ).show(context);
       });
     }
+  }
+
+  String _validateName(String value) {
+    String pattern = r'(^[a-zA-ZáàâãéèêíïóôõöúçñÁÀÂÃÉÈÍÏÓÔÕÖÚÇÑ\s]*$)';
+    RegExp regExp = RegExp(pattern);
+
+    if (value.isEmpty || value == " ") {
+      return "Campo obrigatório";
+    } else if (!regExp.hasMatch(value)) {
+      return "Apenas letras";
+    }
+    return null;
   }
 }

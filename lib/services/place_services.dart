@@ -26,7 +26,7 @@ class PlaceService {
     var long = currentLocation.longitude.toString();
 
     final String searchURL =
-        "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$lat,$long&radius=8000&name=ubs&key=$keyMapsLennyk";
+        "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$lat,$long&rankby=distance&name=ubs&key=$keyCanseiDisso";
 
     var response =
         await http.get(searchURL, headers: {"Accept": "application/json"});
@@ -34,8 +34,8 @@ class PlaceService {
 
     List data = json.decode(response.body)["results"];
 
-    data.forEach((f) => places.add((Place(f["name"], f["name"],
-        f["rating"].toString(), f["vicinity"], f["place_id"]))));
+    data.forEach((f) => places.add((Place(
+        f["name"], f["rating"].toString(), f["vicinity"], f["place_id"]))));
 
     return places;
   }

@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:flutter/material.dart' as prefix0;
 import 'package:geolocator/geolocator.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
@@ -17,6 +18,7 @@ import 'package:tcc_ubs/theme/theme.dart' as Theme;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:path/path.dart' as Path;
 import 'package:tcc_ubs/ui/LoginScreen.dart';
+import 'package:expandable/expandable.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -163,9 +165,28 @@ class _HomeScreenState extends State<HomeScreen> {
                   elevation: 8,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8)),
-                  child: ListTile(
-                    title: Text(f.name),
-                    subtitle: Text(f.vicinity),
+                  child: ExpandablePanel(
+                    header: Padding(
+                      padding: EdgeInsets.fromLTRB(10,5,10,10),
+                      child: ListTile(
+                        subtitle: Text(f.vicinity,
+                            style: TextStyle(
+                                fontFamily: "WorkSansMedium",
+                                fontSize: 17,
+                                color: Colors.grey[700])),
+                        title: Padding(
+                          padding: EdgeInsets.only(bottom: 8),
+                          child: Text(
+                            f.name,
+                            style: TextStyle(
+                                fontFamily: "WorkSansMedium",
+                                fontSize: 20,
+                                color: Colors.black),
+                          ),
+                        ),
+                      ),
+                    ),
+                    expanded: Column(),
                   ),
                 );
               }).toList(),
@@ -174,15 +195,48 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  /*
+  ListTile(
+                    title: Text(
+                      f.name,
+                      style: TextStyle(
+                          fontFamily: "WorkSansMedium",
+                          fontSize: 20,
+                          color: Colors.black),
+                    ),
+                    subtitle: Text(
+                      f.vicinity,
+                      style: TextStyle(
+                          fontFamily: "WorkSansMedium",
+                          fontSize: 17,
+                          color: Colors.grey[700]),
+                    ),
+                  )
+   */
+
   Widget _buildSerch(BuildContext context) {
     return Container(
-      width: MediaQuery.of(context).size.width,
-      height: MediaQuery.of(context).size.height - 60,
-      color: Theme.ColorsTheme.primaryColor,
-      child: Center(
-        child: Text("Search"),
-      ),
-    );
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height - 60,
+        color: Theme.ColorsTheme.primaryColor,
+        child: SafeArea(
+          minimum: EdgeInsets.only(top: 50),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Container(
+                  height: 100,
+                  width: 300,
+                  child: Card(
+                    color: Colors.white,
+                    elevation: 11,
+                    child: ExpandablePanel(
+                      header: Text("UBS"),
+                    ),
+                  ))
+            ],
+          ),
+        ));
   }
 
   Widget _buildPartners(BuildContext context) {

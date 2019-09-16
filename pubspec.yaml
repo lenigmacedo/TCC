@@ -39,6 +39,8 @@ dependencies:
   modal_progress_hud: ^0.1.3
   geolocator: ^5.1.3
   permission_handler: ^3.2.2
+  flutter_staggered_animations: ^0.1.1
+  expandable: ^3.0.0+1
 
 
 
@@ -68,6 +70,7 @@ flutter:
   assets:
     - assets/images/logo.png
     - assets/images/member.png
+
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -5,7 +5,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-import 'package:flutter/material.dart' as prefix0;
 import 'package:geolocator/geolocator.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
@@ -19,6 +18,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:path/path.dart' as Path;
 import 'package:tcc_ubs/ui/LoginScreen.dart';
 import 'package:expandable/expandable.dart';
+import 'package:strings/strings.dart';
+import 'package:tcc_ubs/ui/fake.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -127,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
             controller: _pageController,
             children: <Widget>[
               _buildNearbyPlaces(context),
-              _buildSerch(context),
+              _buildSearch(context),
               _buildPartners(context),
               _buildProfile(context),
             ],
@@ -166,28 +167,70 @@ class _HomeScreenState extends State<HomeScreen> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8)),
                   child: ExpandablePanel(
-                    header: Padding(
-                      padding: EdgeInsets.fromLTRB(10,5,10,10),
-                      child: ListTile(
-                        subtitle: Text(f.vicinity,
-                            style: TextStyle(
-                                fontFamily: "WorkSansMedium",
-                                fontSize: 17,
-                                color: Colors.grey[700])),
-                        title: Padding(
-                          padding: EdgeInsets.only(bottom: 8),
-                          child: Text(
-                            f.name,
-                            style: TextStyle(
-                                fontFamily: "WorkSansMedium",
-                                fontSize: 20,
-                                color: Colors.black),
+                      header: Padding(
+                        padding: EdgeInsets.fromLTRB(10, 5, 10, 10),
+                        child: ListTile(
+                          subtitle: Text(f.vicinity,
+                              style: TextStyle(
+                                  fontFamily: "WorkSansMedium",
+                                  fontSize: 17,
+                                  color: Colors.grey[700])),
+                          title: Padding(
+                            padding: EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              f.name,
+                              style: TextStyle(
+                                  fontFamily: "WorkSansMedium",
+                                  fontSize: 20,
+                                  color: Colors.black),
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    expanded: Column(),
-                  ),
+                      expanded: Column(
+                        children: <Widget>[
+                          Padding(
+                            padding: EdgeInsets.only(top: 5),
+                            child: Padding(
+                              padding: EdgeInsets.only(bottom: 5, left: 30),
+                              child: Align(
+                                alignment: AlignmentDirectional(-1, 0),
+                                child: Text(
+                                  "Especialidades",
+                                  style: TextStyle(
+                                      fontFamily: "WorkSansMedium",
+                                      fontSize: 24,
+                                      color: Colors.black),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                              padding: EdgeInsets.only(bottom: 5, left: 30),
+                              child: Align(
+                                alignment: AlignmentDirectional(-1, 0),
+                                child: Text(
+                                  "Exames",
+                                  style: TextStyle(
+                                      fontFamily: "WorkSansMedium",
+                                      fontSize: 24,
+                                      color: Colors.black),
+                                ),
+                              )),
+                          Padding(
+                              padding: EdgeInsets.only(bottom: 10, left: 30),
+                              child: Align(
+                                alignment: AlignmentDirectional(-1, 0),
+                                child: Text(
+                                  "Remédios",
+                                  style: TextStyle(
+                                      fontFamily: "WorkSansMedium",
+                                      fontSize: 24,
+                                      color: Colors.black),
+                                ),
+                              ))
+                        ],
+                      )),
                 );
               }).toList(),
             ),
@@ -195,48 +238,374 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  /*
-  ListTile(
-                    title: Text(
-                      f.name,
-                      style: TextStyle(
-                          fontFamily: "WorkSansMedium",
-                          fontSize: 20,
-                          color: Colors.black),
-                    ),
-                    subtitle: Text(
-                      f.vicinity,
-                      style: TextStyle(
-                          fontFamily: "WorkSansMedium",
-                          fontSize: 17,
-                          color: Colors.grey[700]),
-                    ),
-                  )
-   */
-
-  Widget _buildSerch(BuildContext context) {
+  Widget _buildSearch(BuildContext context) {
     return Container(
         width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height - 60,
+        height: MediaQuery.of(context).size.height,
         color: Theme.ColorsTheme.primaryColor,
         child: SafeArea(
-          minimum: EdgeInsets.only(top: 50),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                  height: 100,
-                  width: 300,
-                  child: Card(
-                    color: Colors.white,
-                    elevation: 11,
-                    child: ExpandablePanel(
-                      header: Text("UBS"),
-                    ),
-                  ))
-            ],
-          ),
-        ));
+            minimum: EdgeInsets.only(top: 50),
+            child: ListView(
+              children: <Widget>[
+                Card(
+                  margin: EdgeInsets.all(15),
+                  elevation: 8,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  child: ExpandablePanel(
+                      header: Padding(
+                        padding: EdgeInsets.fromLTRB(10, 5, 10, 10),
+                        child: ListTile(
+                          subtitle: Text(
+                              "Rua Sargento Edgard Lourenço Pinto, 116 -  São Paulo",
+                              style: TextStyle(
+                                  fontFamily: "WorkSansMedium",
+                                  fontSize: 17,
+                                  color: Colors.grey[700])),
+                          title: Padding(
+                            padding: EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              "UBS ".toUpperCase() +
+                                  camelize("MASCARENHAS DE MORAES"),
+                              style: TextStyle(
+                                  fontFamily: "WorkSansMedium",
+                                  fontSize: 20,
+                                  color: Colors.black),
+                            ),
+                          ),
+                        ),
+                      ),
+                      expanded: Column(
+                        children: <Widget>[
+                          Padding(
+                            padding: EdgeInsets.only(top: 5),
+                            child: Padding(
+                              padding: EdgeInsets.only(bottom: 10, left: 30),
+                              child: Align(
+                                  alignment: AlignmentDirectional(-1, 0),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (context) => Fake()));
+                                    },
+                                    child: Text(
+                                      "Especialidades e Exames",
+                                      style: TextStyle(
+                                          fontFamily: "WorkSansMedium",
+                                          fontSize: 22,
+                                          color: Colors.black),
+                                    ),
+                                  )),
+                            ),
+                          ),
+                          Padding(
+                              padding: EdgeInsets.only(bottom: 10, left: 30),
+                              child: Align(
+                                alignment: AlignmentDirectional(-1, 0),
+                                child: Text(
+                                  "Remédios",
+                                  style: TextStyle(
+                                      fontFamily: "WorkSansMedium",
+                                      fontSize: 22,
+                                      color: Colors.black),
+                                ),
+                              ))
+                        ],
+                      )),
+                ),
+                Card(
+                  margin: EdgeInsets.all(15),
+                  elevation: 8,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  child: ExpandablePanel(
+                      header: Padding(
+                        padding: EdgeInsets.fromLTRB(10, 5, 10, 10),
+                        child: ListTile(
+                          subtitle: Text(
+                              "R. João Lopes de Lima, 1151 - Jardim Sapopemba, São Paulo",
+                              style: TextStyle(
+                                  fontFamily: "WorkSansMedium",
+                                  fontSize: 17,
+                                  color: Colors.grey[700])),
+                          title: Padding(
+                            padding: EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              "UBS ".toUpperCase() + camelize("Jd. Sapopemba"),
+                              style: TextStyle(
+                                  fontFamily: "WorkSansMedium",
+                                  fontSize: 20,
+                                  color: Colors.black),
+                            ),
+                          ),
+                        ),
+                      ),
+                      expanded: Column(
+                        children: <Widget>[
+                          Padding(
+                            padding: EdgeInsets.only(top: 5),
+                            child: Padding(
+                              padding: EdgeInsets.only(bottom: 5, left: 30),
+                              child: Align(
+                                alignment: AlignmentDirectional(-1, 0),
+                                child: Text(
+                                  "Especialidades",
+                                  style: TextStyle(
+                                      fontFamily: "WorkSansMedium",
+                                      fontSize: 22,
+                                      color: Colors.black),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                              padding: EdgeInsets.only(bottom: 5, left: 30),
+                              child: Align(
+                                alignment: AlignmentDirectional(-1, 0),
+                                child: Text(
+                                  "Exames",
+                                  style: TextStyle(
+                                      fontFamily: "WorkSansMedium",
+                                      fontSize: 22,
+                                      color: Colors.black),
+                                ),
+                              )),
+                          Padding(
+                              padding: EdgeInsets.only(bottom: 10, left: 30),
+                              child: Align(
+                                alignment: AlignmentDirectional(-1, 0),
+                                child: Text(
+                                  "Remédios",
+                                  style: TextStyle(
+                                      fontFamily: "WorkSansMedium",
+                                      fontSize: 22,
+                                      color: Colors.black),
+                                ),
+                              ))
+                        ],
+                      )),
+                ),
+                Card(
+                  margin: EdgeInsets.all(15),
+                  elevation: 8,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  child: ExpandablePanel(
+                      header: Padding(
+                        padding: EdgeInsets.fromLTRB(10, 5, 10, 10),
+                        child: ListTile(
+                          subtitle: Text(
+                              "R. Bernardino Ferraz, 54 - Sapopemba, São Paulo",
+                              style: TextStyle(
+                                  fontFamily: "WorkSansMedium",
+                                  fontSize: 17,
+                                  color: Colors.grey[700])),
+                          title: Padding(
+                            padding: EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              "UBS ".toUpperCase() + camelize("vila renato"),
+                              style: TextStyle(
+                                  fontFamily: "WorkSansMedium",
+                                  fontSize: 20,
+                                  color: Colors.black),
+                            ),
+                          ),
+                        ),
+                      ),
+                      expanded: Column(
+                        children: <Widget>[
+                          Padding(
+                            padding: EdgeInsets.only(top: 5),
+                            child: Padding(
+                              padding: EdgeInsets.only(bottom: 5, left: 30),
+                              child: Align(
+                                alignment: AlignmentDirectional(-1, 0),
+                                child: Text(
+                                  "Especialidades",
+                                  style: TextStyle(
+                                      fontFamily: "WorkSansMedium",
+                                      fontSize: 22,
+                                      color: Colors.black),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                              padding: EdgeInsets.only(bottom: 5, left: 30),
+                              child: Align(
+                                alignment: AlignmentDirectional(-1, 0),
+                                child: Text(
+                                  "Exames",
+                                  style: TextStyle(
+                                      fontFamily: "WorkSansMedium",
+                                      fontSize: 22,
+                                      color: Colors.black),
+                                ),
+                              )),
+                          Padding(
+                              padding: EdgeInsets.only(bottom: 10, left: 30),
+                              child: Align(
+                                alignment: AlignmentDirectional(-1, 0),
+                                child: Text(
+                                  "Remédios",
+                                  style: TextStyle(
+                                      fontFamily: "WorkSansMedium",
+                                      fontSize: 22,
+                                      color: Colors.black),
+                                ),
+                              ))
+                        ],
+                      )),
+                ),
+                Card(
+                  margin: EdgeInsets.all(15),
+                  elevation: 8,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  child: ExpandablePanel(
+                      header: Padding(
+                        padding: EdgeInsets.fromLTRB(10, 5, 10, 10),
+                        child: ListTile(
+                          subtitle: Text(
+                              "Av. Arquiteto Vilanova Artigas, 1071 - Vila Sapopemba, São Paulo",
+                              style: TextStyle(
+                                  fontFamily: "WorkSansMedium",
+                                  fontSize: 17,
+                                  color: Colors.grey[700])),
+                          title: Padding(
+                            padding: EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              "UBS ".toUpperCase() + "Teotônio Vilela",
+                              style: TextStyle(
+                                  fontFamily: "WorkSansMedium",
+                                  fontSize: 20,
+                                  color: Colors.black),
+                            ),
+                          ),
+                        ),
+                      ),
+                      expanded: Column(
+                        children: <Widget>[
+                          Padding(
+                            padding: EdgeInsets.only(top: 5),
+                            child: Padding(
+                              padding: EdgeInsets.only(bottom: 5, left: 30),
+                              child: Align(
+                                alignment: AlignmentDirectional(-1, 0),
+                                child: Text(
+                                  "Especialidades",
+                                  style: TextStyle(
+                                      fontFamily: "WorkSansMedium",
+                                      fontSize: 22,
+                                      color: Colors.black),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                              padding: EdgeInsets.only(bottom: 5, left: 30),
+                              child: Align(
+                                alignment: AlignmentDirectional(-1, 0),
+                                child: Text(
+                                  "Exames",
+                                  style: TextStyle(
+                                      fontFamily: "WorkSansMedium",
+                                      fontSize: 22,
+                                      color: Colors.black),
+                                ),
+                              )),
+                          Padding(
+                              padding: EdgeInsets.only(bottom: 10, left: 30),
+                              child: Align(
+                                alignment: AlignmentDirectional(-1, 0),
+                                child: Text(
+                                  "Remédios",
+                                  style: TextStyle(
+                                      fontFamily: "WorkSansMedium",
+                                      fontSize: 22,
+                                      color: Colors.black),
+                                ),
+                              ))
+                        ],
+                      )),
+                ),
+                Card(
+                  margin: EdgeInsets.all(15),
+                  elevation: 8,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  child: ExpandablePanel(
+                      header: Padding(
+                        padding: EdgeInsets.fromLTRB(10, 5, 10, 10),
+                        child: ListTile(
+                          subtitle: Text(
+                              "Conj. Hab. Teotonio Vilela, São Paulo",
+                              style: TextStyle(
+                                  fontFamily: "WorkSansMedium",
+                                  fontSize: 17,
+                                  color: Colors.grey[700])),
+                          title: Padding(
+                            padding: EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              "UBS ".toUpperCase() + camelize("betinho"),
+                              style: TextStyle(
+                                  fontFamily: "WorkSansMedium",
+                                  fontSize: 20,
+                                  color: Colors.black),
+                            ),
+                          ),
+                        ),
+                      ),
+                      expanded: Column(
+                        children: <Widget>[
+                          Padding(
+                            padding: EdgeInsets.only(top: 5),
+                            child: Padding(
+                              padding: EdgeInsets.only(bottom: 5, left: 30),
+                              child: Align(
+                                alignment: AlignmentDirectional(-1, 0),
+                                child: Text(
+                                  "Especialidades",
+                                  style: TextStyle(
+                                      fontFamily: "WorkSansMedium",
+                                      fontSize: 22,
+                                      color: Colors.black),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                              padding: EdgeInsets.only(bottom: 5, left: 30),
+                              child: Align(
+                                alignment: AlignmentDirectional(-1, 0),
+                                child: Text(
+                                  "Exames",
+                                  style: TextStyle(
+                                      fontFamily: "WorkSansMedium",
+                                      fontSize: 22,
+                                      color: Colors.black),
+                                ),
+                              )),
+                          Padding(
+                              padding: EdgeInsets.only(bottom: 10, left: 30),
+                              child: Align(
+                                alignment: AlignmentDirectional(-1, 0),
+                                child: Text(
+                                  "Remédios",
+                                  style: TextStyle(
+                                      fontFamily: "WorkSansMedium",
+                                      fontSize: 22,
+                                      color: Colors.black),
+                                ),
+                              ))
+                        ],
+                      )),
+                ),
+              ],
+            )));
+
+    ;
   }
 
   Widget _buildPartners(BuildContext context) {
@@ -289,15 +658,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: SizedBox(
                                 height: 250.0,
                                 width: 250.0,
-                                child: (profilePick == null
-                                    ? Image.network(
-                                        model.userData["photoURL"],
-                                        fit: BoxFit.cover,
-                                      )
-                                    : Image.file(
-                                        profilePick,
-                                        fit: BoxFit.cover,
-                                      ))),
+                                child:
+                                    Image.network(model.userData["photoURL"])),
                           )),
                     ),
                     Padding(

@@ -41,6 +41,7 @@ dependencies:
   permission_handler: ^3.2.2
   flutter_staggered_animations: ^0.1.1
   expandable: ^3.0.0+1
+  strings: ^0.1.0
 
 
 

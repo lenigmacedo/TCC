@@ -18,6 +18,7 @@ class PlaceService {
     String keyUbmedy = "AIzaSyB9JXMYdBQ4CX7EWlabRVb_mfSb1k22cOw";
     String keyCanseiDisso = "AIzaSyDMPkGZLrR2pASxEdtSsuXoT2ZjXyPur1A";
     String keyMapsLennyk = "AIzaSyBE7cZBkvJxfRTCD7_FvRs1iX41NXHuuJc";
+    String keyAAAA = "AIzaSyDKAdb-t1JslO08LZsNhTNd7nb6mG_Nuaw";
 
     var currentLocation = await geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.best);
@@ -26,7 +27,7 @@ class PlaceService {
     var long = currentLocation.longitude.toString();
 
     final String searchURL =
-        "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$lat,$long&rankby=distance&name=ubs&key=$keyCanseiDisso";
+        "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$lat,$long&rankby=distance&name=ubs&key=$keyUbmedy";
 
     var response =
         await http.get(searchURL, headers: {"Accept": "application/json"});

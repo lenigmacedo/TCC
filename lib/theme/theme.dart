@@ -19,11 +19,3 @@ class Settings {
       SystemUiOverlayStyle(statusBarColor: Colors.transparent));
 }
 
-
-class Fonts {
-
-  static const TextStyle a = TextStyle(
-
-  );
-
-}

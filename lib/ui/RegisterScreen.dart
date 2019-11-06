@@ -263,12 +263,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                                     fontFamily: "WorkSansBold"),
                                               ),
                                             ),
-                                            onPressed: () {
+                                            onPressed: () async {
                                               if (_formKey.currentState
                                                   .validate()) {
                                                 Map<String, dynamic> userData =
                                                     {
-                                                      "photoURL": "https://firebasestorage.googleapis.com/v0/b/tccubs.appspot.com/o/ABS.png?alt=media&token=36c108cf-dfdb-4808-8805-20ebb6842961",
+                                                  "photoURL":
+                                                      "https://firebasestorage.googleapis.com/v0/b/tccubs.appspot.com/o/ABS.png?alt=media&token=36c108cf-dfdb-4808-8805-20ebb6842961",
                                                   "name": _nameController.text,
                                                   "email":
                                                       _emailController.text,
@@ -279,6 +280,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                                         .text,
                                                     onSucess: _onSucess,
                                                     onFail: _onFail);
+
+
                                               } else {
                                                 setState(() {
                                                   _alwaysValidate = true;
@@ -300,6 +303,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ],
     );
   }
+
+
 
   void _onSucess() {
     Flushbar(
@@ -325,14 +330,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       UserModel().signIn(
           email: _emailController.text,
           pass: _passwordController.text,
-          onSucess: _anoterSucess,
+          onSucess: () => Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => HomeScreen())),
           onFail: () {});
     });
-  }
-
-  void _anoterSucess() {
-    Navigator.of(context)
-        .pushReplacement(MaterialPageRoute(builder: (context) => HomeScreen()));
   }
 
   void _onFail() {

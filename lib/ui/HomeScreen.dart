@@ -1,24 +1,28 @@
 import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:expandable/expandable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flushbar/flushbar.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:flutter/rendering.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:loading_animations/loading_animations.dart';
 import 'package:modal_progress_hud/modal_progress_hud.dart';
+import 'package:path/path.dart' as path;
 import 'package:scoped_model/scoped_model.dart';
+import 'package:strings/strings.dart';
 import 'package:tcc_ubs/models/place_model.dart';
 import 'package:tcc_ubs/models/user_model.dart';
 import 'package:tcc_ubs/services/place_services.dart';
 import 'package:tcc_ubs/theme/theme.dart' as Theme;
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:path/path.dart' as Path;
 import 'package:tcc_ubs/ui/LoginScreen.dart';
-import 'package:expandable/expandable.dart';
-import 'package:strings/strings.dart';
 import 'package:tcc_ubs/ui/fake.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -31,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = false;
   String _userName;
   File profilePick;
+  String urlGoogle;
   bool _alwaysValidate = false;
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
@@ -144,14 +149,15 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _createContent() {
     if (_places == null) {
       return Container(
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
-          color: Theme.ColorsTheme.primaryColor,
-          child: Center(
-            child: CircularProgressIndicator(
-                backgroundColor: Theme.ColorsTheme.primaryColor,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
-          ));
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
+        color: Theme.ColorsTheme.primaryColor,
+        child: Center(
+            child: LoadingBouncingGrid.circle(
+          backgroundColor: Colors.white,
+          duration: Duration(seconds: 1),
+        )),
+      );
     } else {
       return Container(
           width: MediaQuery.of(context).size.width,
@@ -630,6 +636,7 @@ class _HomeScreenState extends State<HomeScreen> {
         builder: (context, child, model) {
           this._userName = model.userData["name"];
 
+          /*
           if (_userName == null) {
             FirebaseAuth.instance.currentUser().then((user) {
               setState(() {
@@ -637,6 +644,8 @@ class _HomeScreenState extends State<HomeScreen> {
               });
             });
           }
+
+          */
 
           return Column(
             mainAxisSize: MainAxisSize.max,
@@ -658,8 +667,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: SizedBox(
                                 height: 250.0,
                                 width: 250.0,
-                                child:
-                                    Image.network(model.userData["photoURL"])),
+                                child: (profilePick == null
+                                    ? Image.network(model.userData["photoURL"])
+                                    : Image.file(profilePick))),
                           )),
                     ),
                     Padding(
@@ -769,75 +779,78 @@ class _HomeScreenState extends State<HomeScreen> {
           content: Container(
             height: 160,
             width: 260,
-            child: Column(
-              children: <Widget>[
-                Padding(
-                    padding: EdgeInsets.fromLTRB(10, 10, 10, 25),
-                    child: Text(
-                      "Tem certeza que deseja sair?",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontFamily: "WorkSansMedium",
-                          fontSize: 19,
-                          height: 1),
-                    )),
-                Row(
-                  children: <Widget>[
-                    Container(
-                        margin: EdgeInsets.only(top: 10, bottom: 20),
-                        decoration: new BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                          gradient: new LinearGradient(
-                              colors: [
-                                Theme.ColorsTheme.secondaryColor,
-                                Theme.ColorsTheme.primaryColor
-                              ],
-                              begin: const FractionalOffset(0.2, 0.2),
-                              end: const FractionalOffset(1.0, 1.0),
-                              stops: [0.0, 1.0],
-                              tileMode: TileMode.clamp),
-                        ),
-                        child: MaterialButton(
-                          highlightColor: Colors.transparent,
-                          splashColor: Theme.ColorsTheme.primaryColor,
-                          child: Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 20.0),
-                            child: Text(
-                              "SAIR",
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20.0,
-                                  fontFamily: "WorkSansBold"),
-                            ),
+            child: ScopedModelDescendant<UserModel>(
+                builder: (context, child, model) {
+              return Column(
+                children: <Widget>[
+                  Padding(
+                      padding: EdgeInsets.fromLTRB(10, 10, 10, 25),
+                      child: Text(
+                        "Tem certeza que deseja sair?",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontFamily: "WorkSansMedium",
+                            fontSize: 19,
+                            height: 1),
+                      )),
+                  Row(
+                    children: <Widget>[
+                      Container(
+                          margin: EdgeInsets.only(top: 10, bottom: 20),
+                          decoration: new BoxDecoration(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(5.0)),
+                            gradient: new LinearGradient(
+                                colors: [
+                                  Theme.ColorsTheme.secondaryColor,
+                                  Theme.ColorsTheme.primaryColor
+                                ],
+                                begin: const FractionalOffset(0.2, 0.2),
+                                end: const FractionalOffset(1.0, 1.0),
+                                stops: [0.0, 1.0],
+                                tileMode: TileMode.clamp),
                           ),
-                          onPressed: () {
-                            UserModel().signOut();
-                            _googleSignIn.signOut();
-                            Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(
-                                    builder: (context) => LoginScreen()));
-                          },
-                        )),
-                    MaterialButton(
-                      highlightColor: Colors.transparent,
-                      splashColor: Colors.grey[200],
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                        child: Text(
-                          "Cancelar",
-                          style: TextStyle(
-                              fontSize: 20.0, fontFamily: "WorkSansMedium"),
+                          child: MaterialButton(
+                            highlightColor: Colors.transparent,
+                            splashColor: Theme.ColorsTheme.primaryColor,
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 20.0),
+                              child: Text(
+                                "SAIR",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20.0,
+                                    fontFamily: "WorkSansBold"),
+                              ),
+                            ),
+                            onPressed: () async {
+                              await model.signOut();
+                              Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(
+                                      builder: (context) => LoginScreen()));
+                            },
+                          )),
+                      MaterialButton(
+                        highlightColor: Colors.transparent,
+                        splashColor: Colors.grey[200],
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                          child: Text(
+                            "Cancelar",
+                            style: TextStyle(
+                                fontSize: 20.0, fontFamily: "WorkSansMedium"),
+                          ),
                         ),
-                      ),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    )
-                  ],
-                )
-              ],
-            ),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      )
+                    ],
+                  )
+                ],
+              );
+            }),
           ),
         );
       },
@@ -994,13 +1007,20 @@ class _HomeScreenState extends State<HomeScreen> {
   Future getImage() async {
     File img = await ImagePicker.pickImage(
         source: ImageSource.gallery, imageQuality: 10);
+    String fileName;
 
     setState(() {
       profilePick = img;
       _isLoading = true;
     });
 
-    String fileName = Path.basename(profilePick.path);
+    try {
+      fileName = path.basename(profilePick.path);
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
     StorageReference storageReference =
         FirebaseStorage.instance.ref().child(fileName);
     StorageUploadTask uploadTask = storageReference.putFile(profilePick);
@@ -1053,5 +1073,40 @@ class _HomeScreenState extends State<HomeScreen> {
       return "Apenas letras";
     }
     return null;
+  }
+}
+
+class ClipProfile extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    Path path = Path();
+
+    path.lineTo(0.0, size.height);
+
+    var firstControlPoint = Offset(size.width / 1, size.height / 2);
+    var firstEndPoint = Offset(size.width, size.height);
+
+    path.quadraticBezierTo(firstControlPoint.dx, firstControlPoint.dy,
+        firstEndPoint.dx, firstEndPoint.dy);
+
+    var secondControlPoint = Offset(size.width, size.height);
+    var secondEndPoint = Offset(size.width, size.height / 80);
+
+    path.quadraticBezierTo(secondControlPoint.dx, secondControlPoint.dy,
+        secondEndPoint.dx, secondEndPoint.dy);
+
+    var thirdControlPoint = Offset(size.width / 2, size.height / 60);
+    var thirdEndPoint = Offset(size.width, size.height);
+
+    path.quadraticBezierTo(thirdControlPoint.dx, thirdControlPoint.dy,
+        thirdEndPoint.dx, thirdControlPoint.dy);
+
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) {
+    return oldClipper != this;
   }
 }

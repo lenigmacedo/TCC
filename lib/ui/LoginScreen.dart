@@ -1,15 +1,16 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:tcc_ubs/models/user_model.dart';
 import 'package:tcc_ubs/theme/theme.dart' as Theme;
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:tcc_ubs/ui/RegisterScreen.dart';
-import 'package:flushbar/flushbar.dart';
 import 'package:tcc_ubs/ui/HomeScreen.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:tcc_ubs/ui/RegisterScreen.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -49,92 +50,102 @@ class _LoginScreenState extends State<LoginScreen> {
     Theme.Settings.orientation;
     Theme.Settings.statusBar;
 
-    return Scaffold(
-        key: _scaffoldKey,
-        appBar: null,
-        body: SingleChildScrollView(
-          child: Container(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height >= 800
-                  ? MediaQuery.of(context).size.height
-                  : 800,
-              decoration: BoxDecoration(gradient: Theme.ColorsTheme.gradient),
-              child: SafeArea(
-                minimum: EdgeInsets.only(top: 30),
-                child: Column(
-                  mainAxisSize: MainAxisSize.max,
-                  children: <Widget>[
-                    Image.asset(
-                      "assets/images/logo.png",
-                      height: 180,
-                      width: 180,
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(top: 10),
-                      child: FlatButton(
-                        onPressed: () => Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (BuildContext context) =>
-                                    RegisterScreen())),
-                        child: Text.rich(TextSpan(
-                            text: "Não tem uma conta? ",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontFamily: "WorkSansSemiBold"),
-                            children: <TextSpan>[
-                              TextSpan(
-                                text: "Cadastre-se",
-                                style: TextStyle(
-                                    decoration: TextDecoration.underline,
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontFamily: "WorkSansSemiBold"),
-                              )
-                            ])),
-                        highlightColor: Colors.transparent,
-                        splashColor: Colors.transparent,
+    return WillPopScope(
+      onWillPop: _exitApp,
+      child: Scaffold(
+          key: _scaffoldKey,
+          appBar: null,
+          body: SingleChildScrollView(
+            child: Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height >= 800
+                    ? MediaQuery.of(context).size.height
+                    : 800,
+                decoration: BoxDecoration(gradient: Theme.ColorsTheme.gradient),
+                child: SafeArea(
+                  minimum: EdgeInsets.only(top: 30),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.max,
+                    children: <Widget>[
+                      Image.asset(
+                        "assets/images/logo.png",
+                        height: 180,
+                        width: 180,
                       ),
-                    ),
-                    _buildCardSignIn(),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Padding(
-                            padding: EdgeInsets.only(top: 15),
-                            child: GestureDetector(
-                              onTap: _showDialog,
-                              child: Text(
-                                "Esqueceu a senha?",
-                                style: TextStyle(
-                                    fontFamily: "WorkSansRegular",
-                                    color: Colors.white,
-                                    fontSize: 15,
-                                    decoration: TextDecoration.underline,
-                                    decorationStyle: TextDecorationStyle.solid),
-                              ),
-                            )),
-                      ],
-                    ),
-                    _buildOr(),
-                    _buildSocialLoginButtons(),
-                    Padding(
-                      padding: EdgeInsets.only(top: 35),
-                      child: Center(
-                        child: Text(
-                          "Entrar como convidado",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontFamily: "WorkSansMedium",
-                              decoration: TextDecoration.underline,
-                              fontSize: 20),
+                      Padding(
+                        padding: EdgeInsets.only(top: 10),
+                        child: FlatButton(
+                          onPressed: () => Navigator.of(context).push(
+                              MaterialPageRoute(
+                                  builder: (BuildContext context) =>
+                                      RegisterScreen())),
+                          child: Text.rich(TextSpan(
+                              text: "Não tem uma conta? ",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontFamily: "WorkSansSemiBold"),
+                              children: <TextSpan>[
+                                TextSpan(
+                                  text: "Cadastre-se",
+                                  style: TextStyle(
+                                      decoration: TextDecoration.underline,
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontFamily: "WorkSansSemiBold"),
+                                )
+                              ])),
+                          highlightColor: Colors.transparent,
+                          splashColor: Colors.transparent,
                         ),
                       ),
-                    )
-                  ],
-                ),
-              )),
-        ));
+                      _buildCardSignIn(),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Padding(
+                              padding: EdgeInsets.only(top: 15),
+                              child: GestureDetector(
+                                onTap: _showDialog,
+                                child: Text(
+                                  "Esqueceu a senha?",
+                                  style: TextStyle(
+                                      fontFamily: "WorkSansRegular",
+                                      color: Colors.white,
+                                      fontSize: 15,
+                                      decoration: TextDecoration.underline,
+                                      decorationStyle:
+                                          TextDecorationStyle.solid),
+                                ),
+                              )),
+                        ],
+                      ),
+                      _buildOr(),
+                      _buildSocialLoginButtons(),
+                      Padding(
+                        padding: EdgeInsets.only(top: 35),
+                        child: Center(
+                          child: GestureDetector(
+                            onTap: () {
+                              _buildFlushbar(
+                                  "Ainda não implementado", 2, Colors.red);
+                            },
+                            child: Text(
+                              "Entrar como convidado",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: "WorkSansMedium",
+                                  decoration: TextDecoration.underline,
+                                  fontSize: 20),
+                            ),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
+                )),
+          )),
+    );
   }
 
   Widget _buildCardSignIn() {
@@ -219,7 +230,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                           _obscureTextLogin
                                               ? FontAwesomeIcons.eye
                                               : FontAwesomeIcons.eyeSlash,
-                                          size: 18,
+                                          size: 24,
                                         ),
                                       ))),
                             ),
@@ -346,7 +357,9 @@ class _LoginScreenState extends State<LoginScreen> {
     return Padding(
       padding: EdgeInsets.only(top: 10.0),
       child: GestureDetector(
-        onTap: _loginWithGoogle,
+        onTap: () {
+          _buildFlushbar("Login com Google desativado", 2, Colors.red);
+        },
         child: Container(
             width: 150,
             height: 50,
@@ -383,6 +396,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<Null> _loginWithGoogle() async {
     GoogleSignInAccount user = _googleSignIn.currentUser;
+    if (user == null) {
+      user = await _googleSignIn.signInSilently();
+    }
+
     if (user == null) {
       user = await _googleSignIn.signIn();
     }
@@ -651,6 +668,104 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         );
+      },
+    );
+  }
+
+  Future<bool> _exitApp() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+              elevation: 11,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              title: Text(
+                "SAIR",
+                style: TextStyle(
+                  fontFamily: "WorkSansSemiBold",
+                  fontSize: 22,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              content: Container(
+                height: 160,
+                width: 260,
+                child: ScopedModelDescendant<UserModel>(
+                    builder: (context, child, model) {
+                  return Column(
+                    children: <Widget>[
+                      Padding(
+                          padding: EdgeInsets.fromLTRB(10, 10, 10, 25),
+                          child: Text(
+                            "Tem certeza que deseja sair do app?",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontFamily: "WorkSansMedium",
+                                fontSize: 19,
+                                height: 1),
+                          )),
+                      Row(
+                        children: <Widget>[
+                          Container(
+                              margin: EdgeInsets.only(top: 10, bottom: 20),
+                              decoration: new BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(5.0)),
+                                gradient: new LinearGradient(
+                                    colors: [
+                                      Theme.ColorsTheme.secondaryColor,
+                                      Theme.ColorsTheme.primaryColor
+                                    ],
+                                    begin: const FractionalOffset(0.2, 0.2),
+                                    end: const FractionalOffset(1.0, 1.0),
+                                    stops: [0.0, 1.0],
+                                    tileMode: TileMode.clamp),
+                              ),
+                              child: MaterialButton(
+                                highlightColor: Colors.transparent,
+                                splashColor: Theme.ColorsTheme.primaryColor,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20.0),
+                                  child: Text(
+                                    "SAIR",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 20.0,
+                                        fontFamily: "WorkSansBold"),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  SystemNavigator.pop();
+                                },
+                              )),
+                          MaterialButton(
+                            highlightColor: Colors.transparent,
+                            splashColor: Colors.grey[200],
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 10.0),
+                              child: Text(
+                                "Cancelar",
+                                style: TextStyle(
+                                    fontSize: 20.0,
+                                    fontFamily: "WorkSansMedium"),
+                              ),
+                            ),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          )
+                        ],
+                      )
+                    ],
+                  );
+                }),
+              ),
+            ) ??
+            false;
       },
     );
   }

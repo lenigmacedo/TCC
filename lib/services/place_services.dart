@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:geolocator/geolocator.dart';
-import 'package:tcc_ubs/models/place_model.dart';
 import 'package:http/http.dart' as http;
+import 'package:tcc_ubs/models/place_model.dart';
 
 class PlaceService {
   static final _service = PlaceService();
@@ -27,7 +27,7 @@ class PlaceService {
     var long = currentLocation.longitude.toString();
 
     final String searchURL =
-        "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$lat,$long&rankby=distance&name=ubs&key=$keyMapsLennyk";
+        "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$lat,$long&rankby=distance&name=ubs&key=$keyUbmedy";
 
     var response =
         await http.get(searchURL, headers: {"Accept": "application/json"});

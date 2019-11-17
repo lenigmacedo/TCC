@@ -43,7 +43,8 @@ dependencies:
   expandable: ^3.0.0+1
   strings: ^0.1.0
   loading_animations: ^2.0.0
-  floating_search_bar: ^0.2.0
+  algolia: ^0.1.7
+  url_launcher: ^5.2.5
 
 
 

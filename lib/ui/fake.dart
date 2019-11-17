@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:tcc_ubs/theme/theme.dart' as Theme;
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:tcc_ubs/theme/theme.dart' as Theme;
 
-class Fake extends StatefulWidget {
-  @override
-  _FakeState createState() => _FakeState();
-}
-
-class _FakeState extends State<Fake> {
+class Fake extends StatelessWidget {
   int x = 0;
+  String hm;
+
+  Fake(this.hm);
+
+  String name;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +32,7 @@ class _FakeState extends State<Fake> {
                   Padding(
                     padding: EdgeInsets.only(top: 10, bottom: 80),
                     child: Text(
-                      "UBS Mascarenhas de Moraes",
+                      hm,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                           fontFamily: "WorkSansBold",

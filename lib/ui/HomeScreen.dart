@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:algolia/algolia.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:expandable/expandable.dart';
@@ -22,6 +23,9 @@ import 'package:tcc_ubs/models/user_model.dart';
 import 'package:tcc_ubs/services/place_services.dart';
 import 'package:tcc_ubs/theme/theme.dart' as Theme;
 import 'package:tcc_ubs/ui/LoginScreen.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import 'fake.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -35,6 +39,10 @@ class _HomeScreenState extends State<HomeScreen> {
   File profilePick;
   String urlGoogle;
   bool _alwaysValidate = false;
+  List<AlgoliaObjectSnapshot> _results = [];
+  bool _searching = false;
+  String idAlgolia = "M8Z6XTFU22";
+  String apiAlgolia = "60625b97ef296463b95a9cd9c5412be2";
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
@@ -179,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         title: Text(
                           "UBS Próximas",
                           style: TextStyle(
-                            fontFamily: "WorkSansMedium",
+                            fontFamily: "WorkSansRegular",
                             color: Colors.white,
                             fontSize: 18.0,
                           ),
@@ -203,21 +211,27 @@ class _HomeScreenState extends State<HomeScreen> {
                                 header: Padding(
                                   padding: EdgeInsets.fromLTRB(10, 5, 10, 10),
                                   child: ListTile(
+                                    title: Padding(
+                                      padding: EdgeInsets.only(bottom: 8),
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          print(f.id);
+                                          print(f.name);
+                                        },
+                                        child: Text(
+                                          f.name,
+                                          style: TextStyle(
+                                              fontFamily: "WorkSansMedium",
+                                              fontSize: 20,
+                                              color: Colors.black),
+                                        ),
+                                      ),
+                                    ),
                                     subtitle: Text(f.vicinity,
                                         style: TextStyle(
                                             fontFamily: "WorkSansMedium",
                                             fontSize: 17,
                                             color: Colors.grey[700])),
-                                    title: Padding(
-                                      padding: EdgeInsets.only(bottom: 8),
-                                      child: Text(
-                                        f.name,
-                                        style: TextStyle(
-                                            fontFamily: "WorkSansMedium",
-                                            fontSize: 20,
-                                            color: Colors.black),
-                                      ),
-                                    ),
                                   ),
                                 ),
                                 expanded: Column(
@@ -230,44 +244,60 @@ class _HomeScreenState extends State<HomeScreen> {
                                         child: Align(
                                           alignment:
                                               AlignmentDirectional(-1, 0),
-                                          child: Text(
-                                            "Especialidades",
-                                            style: TextStyle(
-                                                fontFamily: "WorkSansMedium",
-                                                fontSize: 24,
-                                                color: Colors.black),
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              var name = f.id;
+
+                                              Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          Fake(name)));
+                                            },
+                                            child: Text(
+                                              "Remédios e Especialidades",
+                                              style: TextStyle(
+                                                  fontFamily: "WorkSansMedium",
+                                                  fontSize: 22,
+                                                  color: Colors.black),
+                                            ),
                                           ),
                                         ),
                                       ),
                                     ),
                                     Padding(
                                         padding: EdgeInsets.only(
-                                            bottom: 5, left: 30),
+                                            bottom: 15, left: 30),
                                         child: Align(
                                           alignment:
                                               AlignmentDirectional(-1, 0),
-                                          child: Text(
-                                            "Exames",
-                                            style: TextStyle(
-                                                fontFamily: "WorkSansMedium",
-                                                fontSize: 24,
-                                                color: Colors.black),
+                                          child: GestureDetector(
+                                            onTap: () {
+                                              launchMap(f.vicinity);
+                                            },
+                                            child: Row(
+                                              children: <Widget>[
+                                                Text(
+                                                  "Como chegar",
+                                                  style: TextStyle(
+                                                      fontFamily:
+                                                          "WorkSansMedium",
+                                                      fontSize: 22,
+                                                      color: Colors.black),
+                                                ),
+                                                Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          left: 10),
+                                                  child: Icon(
+                                                    FontAwesomeIcons
+                                                        .mapMarkerAlt,
+                                                    size: 20,
+                                                  ),
+                                                )
+                                              ],
+                                            ),
                                           ),
                                         )),
-                                    Padding(
-                                        padding: EdgeInsets.only(
-                                            bottom: 10, left: 30),
-                                        child: Align(
-                                          alignment:
-                                              AlignmentDirectional(-1, 0),
-                                          child: Text(
-                                            "Remédios",
-                                            style: TextStyle(
-                                                fontFamily: "WorkSansMedium",
-                                                fontSize: 24,
-                                                color: Colors.black),
-                                          ),
-                                        ))
                                   ],
                                 )),
                           );
@@ -304,18 +334,29 @@ class _HomeScreenState extends State<HomeScreen> {
                           borderRadius: BorderRadius.circular(8.0),
                           elevation: 5,
                           child: ListTile(
-                            trailing: Icon(
-                              Icons.search,
-                              size: 30,
-                            ),
-                            title: TextField(
-                              controller: _searchController,
-                              decoration: InputDecoration.collapsed(
-                                focusColor: Colors.transparent,
-                                filled: false,
-                                hintText: "Buscar...",
+                            trailing: GestureDetector(
+                              onTap: searchText,
+                              child: Icon(
+                                Icons.search,
+                                size: 30,
                               ),
-                              autofocus: false,
+                            ),
+                            title: SafeArea(
+                              child: TextField(
+                                onEditingComplete: searchText,
+                                controller: _searchController,
+                                decoration: InputDecoration(
+                                    contentPadding:
+                                        EdgeInsets.symmetric(vertical: 10),
+                                    border: InputBorder.none,
+                                    focusColor: Colors.transparent,
+                                    filled: false,
+                                    hintText: "Buscar...",
+                                    hintStyle: TextStyle(
+                                        fontFamily: "WorkSansRegular",
+                                        fontSize: 16)),
+                                autofocus: false,
+                              ),
                             ),
                           )),
                     ),
@@ -324,77 +365,42 @@ class _HomeScreenState extends State<HomeScreen> {
                     height: 20,
                   ),
                   Expanded(
-                    child: StreamBuilder(
-                      builder: (context, snapshot) {
-                        switch (snapshot.connectionState) {
-                          case ConnectionState.none:
-                          case ConnectionState.waiting:
-                            return Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          default:
-                            return ListView.builder(
-                              itemBuilder: (context, index) {
-                                return CardPet(
-                                    snapshot.data.documents[index].data);
-                              },
-                              itemCount: snapshot.data.documents.length,
-                            );
-                        }
-                      },
-                      stream: Firestore.instance
-                          .collection("pets")
-                          .where('raca', isEqualTo: _searchController.text)
-                          .snapshots(),
-                    ),
-                  )
+                      child: _searching == true
+                          ? Center(
+                              child: LoadingBouncingGrid.circle(
+                              backgroundColor: Colors.white,
+                              duration: Duration(seconds: 1),
+                            ))
+                          : _results.length == 0
+                              ? Center(
+                                  child: Text(
+                                  "Não houve resultados para sua pesquisa.",
+                                  style: TextStyle(
+                                      fontFamily: "WorkSansMedium",
+                                      fontSize: 16),
+                                ))
+                              : ListView.builder(
+                                  itemCount: _results.length,
+                                  itemBuilder: (context, index) {
+                                    AlgoliaObjectSnapshot snap =
+                                        _results[index];
+
+                                    return Container(
+                                      margin:
+                                          EdgeInsets.fromLTRB(15, 0, 15, 10),
+                                      child: Card(
+                                        child: ListTile(
+                                          title: Text(snap.data["name"]),
+                                          subtitle: Text(snap.data["endereco"]),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ))
                 ],
               ),
             )));
   }
-
-  /*
-
-  CustomScrollView(slivers: <Widget>[
-                SliverFloatingBar(
-                  floating: true,
-                  title: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration.collapsed(
-                      hintText: "Search...",
-                    ),
-                    autofocus: false,
-                  ),
-                ),
-              ])
-
-  Expanded(
-                  child: StreamBuilder(
-                    builder: (context, snapshot) {
-                      switch (snapshot.connectionState) {
-                        case ConnectionState.none:
-                        case ConnectionState.waiting:
-                          return Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        default:
-                          return ListView.builder(
-                            itemBuilder: (context, index) {
-                              return CardPet(
-                                  snapshot.data.documents[index].data);
-                            },
-                            itemCount: snapshot.data.documents.length,
-                          );
-                      }
-                    },
-                    stream: Firestore.instance
-                        .collection("pets")
-                        .where('raca', isEqualTo: _searchController.text)
-                        .snapshots(),
-                  ),
-                )
-
-   */
 
   Widget _buildPartners(BuildContext context) {
     return Container(
@@ -851,147 +857,62 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     return null;
   }
-}
 
-class CardPartner extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container();
+  searchText() async {
+    setState(() {
+      _searching = true;
+    });
+
+    Algolia algolia =
+        Algolia.init(applicationId: idAlgolia, apiKey: apiAlgolia);
+
+    AlgoliaQuery query = algolia.instance.index('ubs');
+    query = query.search(_searchController.text);
+
+    if (_searchController.text.isEmpty) {
+      setState(() {
+        _searching = false;
+        _results = [];
+      });
+    } else {
+      _results = (await query.getObjects()).hits;
+
+      setState(() {
+        _searching = false;
+      });
+    }
   }
-}
 
-class CardPet extends StatelessWidget {
-  final Map<String, dynamic> data;
+  launchMap(String address) async {
+    String googleURL =
+        "https://www.google.com/maps/search/?api=1&query=$address";
+    String appleURL = "https:///maps.apple.com/?sll=$address";
 
-  CardPet(this.data);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 30.0),
-      child: Container(
-        margin: EdgeInsets.only(bottom: 20),
-        child: Card(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(15, 15, 10, 10),
-                child: Center(
-                  child: Text(
-                    data["nomePet"],
-                    style:
-                        TextStyle(fontSize: 20, fontFamily: "BorisBlackBloxx"),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(15, 5, 15, 0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      "Teste: ",
-                      style: TextStyle(
-                          fontSize: 18, fontFamily: "BorisBlackBloxx"),
-                    ),
-                    Text(
-                      data["raca"],
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(15, 5, 10, 0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      "Teste: ",
-                      style: TextStyle(
-                          fontSize: 18, fontFamily: "BorisBlackBloxx"),
-                    ),
-                    Text(
-                      data["sexo"],
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(15, 5, 10, 0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      "Teste: ",
-                      style: TextStyle(
-                          fontSize: 18, fontFamily: "BorisBlackBloxx"),
-                    ),
-                    Text(
-                      data["tipo"],
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(15, 5, 10, 0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      "Teste: ",
-                      style: TextStyle(
-                          fontSize: 18, fontFamily: "BorisBlackBloxx"),
-                    ),
-                    Text(
-                      data["nomeDono"],
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(15, 5, 10, 0),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      "Teste: ",
-                      style: TextStyle(
-                          fontSize: 19, fontFamily: "BorisBlackBloxx"),
-                    ),
-                    Expanded(
-                      child: Text(
-                        data["telefone"],
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(15, 5, 10, 0),
-                child: Text(
-                  "Teste: ",
-                  style: TextStyle(fontSize: 18, fontFamily: "BorisBlackBloxx"),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(15, 10, 10, 20),
-                child: Text(
-                  data["descricao"],
-                  style: TextStyle(fontSize: 18),
-                ),
-              )
-            ],
-          ),
+    if (await canLaunch(googleURL)) {
+      await launch(googleURL);
+    } else if (await canLaunch(appleURL)) {
+      await launch(appleURL);
+    } else {
+      Flushbar(
+        animationDuration: Duration(milliseconds: 500),
+        icon: Icon(
+          FontAwesomeIcons.exclamation,
+          color: Colors.white,
+          size: 26,
         ),
-      ),
-    );
+        backgroundColor: Colors.red,
+        flushbarStyle: FlushbarStyle.GROUNDED,
+        messageText: Text(
+          "Não foi possível abrir o mapa",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontFamily: "WorkSansSemiBold"),
+        ),
+        duration: Duration(seconds: 2),
+        flushbarPosition: FlushbarPosition.TOP,
+      ).show(context);
+    }
   }
 }

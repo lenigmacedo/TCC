@@ -47,6 +47,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _searchController = TextEditingController();
 
+  final firestore = Firestore.instance;
+
   Geolocator geolocator = Geolocator();
   Position userLocation;
 
@@ -391,7 +393,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       child: Card(
                                         child: ListTile(
                                           title: Text(snap.data["name"]),
-                                          subtitle: Text(snap.data["endereco"]),
+                                          subtitle: Text(snap.data["vicinity"]),
                                         ),
                                       ),
                                     );
@@ -407,7 +409,65 @@ class _HomeScreenState extends State<HomeScreen> {
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height - 60,
         color: Theme.ColorsTheme.primaryColor,
-        child: Column());
+        child: NestedScrollView(
+            headerSliverBuilder:
+                (BuildContext context, bool innerBoxIsScrolled) {
+              return <Widget>[
+                SliverAppBar(
+                  elevation: 6,
+                  backgroundColor: Theme.ColorsTheme.primaryColor,
+                  expandedHeight: 80,
+                  pinned: true,
+                  flexibleSpace: FlexibleSpaceBar(
+                    centerTitle: true,
+                    title: Text(
+                      "Farmácias parceiras",
+                      style: TextStyle(
+                        fontFamily: "WorkSansRegular",
+                        color: Colors.white,
+                        fontSize: 18.0,
+                      ),
+                    ),
+                    titlePadding: EdgeInsets.only(bottom: 20),
+                  ),
+                ),
+              ];
+            },
+            body: Column(
+              children: <Widget>[
+                Expanded(
+                  child: FutureBuilder(
+                    future: getPartners(),
+                    builder: (context, snapshot) {
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.none:
+                        case ConnectionState.waiting:
+                          return Center(
+                            child: LoadingBouncingGrid.circle(
+                              backgroundColor: Colors.white,
+                              duration: Duration(seconds: 1),
+                            ),
+                          );
+                        default:
+                          return ListView.builder(
+                            itemBuilder: (context, index) {
+                              return CardPartners(snapshot.data[index].data);
+                            },
+                            itemCount: snapshot.data.length,
+                          );
+                      }
+                    },
+                  ),
+                )
+              ],
+            )));
+  }
+
+  getPartners() async {
+    QuerySnapshot querySnapshot =
+        await firestore.collection("farmacias").getDocuments();
+
+    return querySnapshot.documents;
   }
 
   Widget _buildProfile(BuildContext context) {
@@ -757,10 +817,7 @@ class _HomeScreenState extends State<HomeScreen> {
     String userID = await FirebaseAuth.instance.currentUser().then((user) {
       return user.uid;
     });
-    Firestore.instance
-        .collection("users")
-        .document(userID)
-        .updateData({"name": name});
+    firestore.collection("users").document(userID).updateData({"name": name});
 
     setState(() {
       _userName = name;
@@ -814,7 +871,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return user.uid;
     });
 
-    Firestore.instance
+    firestore
         .collection("users")
         .document(userID)
         .updateData({"photoURL": url});
@@ -916,3 +973,82 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 }
+
+class CardPartners extends StatelessWidget {
+  final Map<String, dynamic> data;
+
+  CardPartners(this.data);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 150,
+      margin: EdgeInsets.fromLTRB(15, 0, 15, 15),
+      child: Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          elevation: 11,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              Image.network(
+                data["photoURL"],
+                height: 100,
+                width: 150,
+              ),
+              Column(
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Text(data["name"],
+                        style: TextStyle(
+                            fontSize: 24, fontFamily: "WorkSansSemiBold")),
+                  ),
+                  Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: Container(
+                          margin: EdgeInsets.only(top: 5, bottom: 20),
+                          decoration: new BoxDecoration(
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(5.0)),
+                            gradient: new LinearGradient(
+                                colors: [
+                                  Theme.ColorsTheme.secondaryColor,
+                                  Theme.ColorsTheme.primaryColor
+                                ],
+                                begin: const FractionalOffset(0.2, 0.2),
+                                end: const FractionalOffset(1.0, 1.0),
+                                stops: [0.0, 1.0],
+                                tileMode: TileMode.clamp),
+                          ),
+                          child: MaterialButton(
+                            highlightColor: Colors.transparent,
+                            splashColor: Theme.ColorsTheme.primaryColor,
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 10.0, horizontal: 20),
+                              child: Text(
+                                "CUPONS",
+                                style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20.0,
+                                    fontFamily: "WorkSansBold"),
+                              ),
+                            ),
+                            onPressed: () {},
+                          )))
+                ],
+              )
+            ],
+          )),
+    );
+  }
+}
+
+/*
+
+)
+ */
+
+/*
+
+ */

@@ -30,7 +30,7 @@ class PlaceService {
     var long = currentLocation.longitude.toString();
 
     final String searchURL =
-        "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$lat,$long&rankby=distance&name=ubs&key=$keySouBurro";
+        "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$lat,$long&rankby=distance&name=ubs&key=$keyLenig";
 
     var response =
         await http.get(searchURL, headers: {"Accept": "application/json"});

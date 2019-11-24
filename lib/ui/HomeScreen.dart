@@ -25,7 +25,7 @@ import 'package:tcc_ubs/theme/theme.dart' as Theme;
 import 'package:tcc_ubs/ui/LoginScreen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'fake.dart';
+import 'UBSDetails.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -248,12 +248,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                               AlignmentDirectional(-1, 0),
                                           child: GestureDetector(
                                             onTap: () {
-                                              var name = f.id;
-
                                               Navigator.of(context).push(
                                                   MaterialPageRoute(
                                                       builder: (context) =>
-                                                          Fake(name)));
+                                                          UBSDetails(
+                                                              f.name,
+                                                              f.id,
+                                                              f.vicinity)));
                                             },
                                             child: Text(
                                               "Remédios e Especialidades",
@@ -387,13 +388,26 @@ class _HomeScreenState extends State<HomeScreen> {
                                     AlgoliaObjectSnapshot snap =
                                         _results[index];
 
-                                    return Container(
-                                      margin:
-                                          EdgeInsets.fromLTRB(15, 0, 15, 10),
-                                      child: Card(
-                                        child: ListTile(
-                                          title: Text(snap.data["name"]),
-                                          subtitle: Text(snap.data["vicinity"]),
+                                    return GestureDetector(
+                                      onTap: () {
+                                        Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    UBSDetails(
+                                                      snap.data["name"],
+                                                      snap.data["id"],
+                                                      snap.data["vicinity"],
+                                                    )));
+                                      },
+                                      child: Container(
+                                        margin:
+                                            EdgeInsets.fromLTRB(15, 0, 15, 10),
+                                        child: Card(
+                                          child: ListTile(
+                                            title: Text(snap.data["name"]),
+                                            subtitle:
+                                                Text(snap.data["vicinity"]),
+                                          ),
                                         ),
                                       ),
                                     );
@@ -472,7 +486,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildProfile(BuildContext context) {
     return SingleChildScrollView(
-      physics: MediaQuery.of(context).size.height >= 600
+      physics: MediaQuery.of(context).size.height >= 700
           ? NeverScrollableScrollPhysics()
           : AlwaysScrollableScrollPhysics(),
       child: ScopedModelDescendant<UserModel>(
@@ -495,9 +509,9 @@ class _HomeScreenState extends State<HomeScreen> {
             children: <Widget>[
               Container(
                 width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height >= 800
+                height: MediaQuery.of(context).size.height >= 700
                     ? MediaQuery.of(context).size.height - 60
-                    : 740,
+                    : 640,
                 color: Theme.ColorsTheme.primaryColor,
                 child: Column(
                   children: <Widget>[

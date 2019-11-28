@@ -1,13 +1,18 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flushbar/flushbar.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:loading_animations/loading_animations.dart';
 import 'package:tcc_ubs/theme/theme.dart' as Theme;
+import 'package:url_launcher/url_launcher.dart';
 
 class UBSDetails extends StatelessWidget {
   String name;
-  String placeId;
   String endereco;
+  String place_id;
 
-  UBSDetails(this.name, this.placeId, this.endereco);
+  UBSDetails(this.name, this.endereco, this.place_id);
 
   @override
   Widget build(BuildContext context) {
@@ -16,37 +21,75 @@ class UBSDetails extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Theme.ColorsTheme.primaryColor,
-      appBar: null,
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: Theme.ColorsTheme.primaryColor,
+        centerTitle: true,
+        title: Text(
+          name,
+          style: TextStyle(fontSize: 22, fontFamily: "WorkSansRegular"),
+        ),
+      ),
       body: SafeArea(
-        minimum: EdgeInsets.only(top: 10),
-        child: Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height >= 500
-                ? MediaQuery.of(context).size.height
-                : 500,
-            color: Theme.ColorsTheme.primaryColor,
-            child: NestedScrollView(
-                headerSliverBuilder:
-                    (BuildContext context, bool innerBoxIsScrolled) {
-                  return <Widget>[
-                    SliverAppBar(
-                      elevation: 6,
-                      backgroundColor: Theme.ColorsTheme.primaryColor,
-                      expandedHeight: 80,
-                      pinned: false,
-                      floating: true,
-                      snap: true,
-                      title: Text(name),
-                      centerTitle: true,
-                    ),
-                  ];
-                },
-                body: Column(
+          minimum: EdgeInsets.only(top: 10),
+          child: Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              color: Theme.ColorsTheme.primaryColor,
+              child: SingleChildScrollView(
+                physics: MediaQuery.of(context).size.height >= 700
+                    ? NeverScrollableScrollPhysics()
+                    : AlwaysScrollableScrollPhysics(),
+                child: Column(
                   children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.only(top: 15),
+                      child: Text(
+                        "Remédios",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontFamily: "WorkSansMedium",
+                            fontSize: 22,
+                            color: Colors.white),
+                      ),
+                    ),
+                    Padding(
+                        padding: EdgeInsets.only(top: 10, bottom: 20),
+                        child: Container(
+                            width: 300,
+                            height: 300,
+                            child: Card(
+                              elevation: 11,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                              child: FutureBuilder(
+                                future: getRemedios(),
+                                builder: (context, snapshot) {
+                                  switch (snapshot.connectionState) {
+                                    case ConnectionState.none:
+                                    case ConnectionState.waiting:
+                                      return Center(
+                                        child: LoadingBouncingGrid.circle(
+                                          backgroundColor: Colors.white,
+                                          duration: Duration(seconds: 1),
+                                        ),
+                                      );
+                                    default:
+                                      return ListView.builder(
+                                        itemBuilder: (context, index) {
+                                          return CardRemedios(
+                                              snapshot.data[index].data);
+                                        },
+                                        itemCount: snapshot.data.length,
+                                      );
+                                  }
+                                },
+                              ),
+                            ))),
                     Padding(
                       padding: const EdgeInsets.only(top: 5),
                       child: Text(
-                        "Especialidades",
+                        "Especialidades e Exames",
                         style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontFamily: "WorkSansMedium",
@@ -58,194 +101,76 @@ class UBSDetails extends StatelessWidget {
                       padding: EdgeInsets.only(top: 10),
                       child: Container(
                         width: 300,
-                        height: 100,
+                        height: 120,
                         child: Card(
                           elevation: 11,
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8)),
-                          child: PageView(
-                            scrollDirection: Axis.vertical,
-                            children: <Widget>[
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  Container(
-                                    child: Center(
-                                      child: Text(
-                                        "Odontologia",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontFamily: "WorkSansMedium",
-                                            fontSize: 22,
-                                            color: Colors.black),
-                                      ),
+                          child: FutureBuilder(
+                            future: getExames(),
+                            builder: (context, snapshot) {
+                              switch (snapshot.connectionState) {
+                                case ConnectionState.none:
+                                case ConnectionState.waiting:
+                                  return Center(
+                                    child: LoadingBouncingGrid.circle(
+                                      backgroundColor: Colors.white,
+                                      duration: Duration(seconds: 1),
                                     ),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(5.0)),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 10),
-                                    child: Icon(
-                                      FontAwesomeIcons.arrowDown,
-                                      size: 15,
-                                    ),
-                                  )
-                                ],
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  Container(
-                                    child: Center(
-                                      child: Text(
-                                        "Pediatria",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontFamily: "WorkSansMedium",
-                                            fontSize: 22,
-                                            color: Colors.black),
-                                      ),
-                                    ),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(5.0)),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 10),
-                                    child: Icon(
-                                      FontAwesomeIcons.arrowDown,
-                                      size: 15,
-                                    ),
-                                  )
-                                ],
-                              ),
-                              Container(
-                                child: Center(
-                                  child: Text(
-                                    "Fonoaudiologia",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: "WorkSansMedium",
-                                        fontSize: 22,
-                                        color: Colors.black),
-                                  ),
-                                ),
-                                decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(5.0)),
-                                ),
-                              ),
-                            ],
+                                  );
+                                default:
+                                  return ListView.builder(
+                                    itemBuilder: (context, index) {
+                                      return Padding(
+                                        padding: const EdgeInsets.fromLTRB(
+                                            20, 10, 20, 10),
+                                        child: Text(
+                                          snapshot.data[index]["name"],
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontFamily: "WorkSansMedium"),
+                                        ),
+                                      );
+                                    },
+                                    itemCount: snapshot.data.length,
+                                  );
+                              }
+                            },
                           ),
                         ),
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(top: 30),
-                      child: Text(
-                        "Exames",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontFamily: "WorkSansMedium",
-                            fontSize: 22,
-                            color: Colors.white),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(top: 10),
-                      child: Container(
-                        width: 300,
-                        height: 100,
-                        child: Card(
-                          elevation: 11,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          child: PageView(
-                            scrollDirection: Axis.horizontal,
-                            children: <Widget>[
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  Container(
-                                    child: Center(
-                                      child: Text(
-                                        "Hepatite B",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontFamily: "WorkSansMedium",
-                                            fontSize: 22,
-                                            color: Colors.black),
-                                      ),
-                                    ),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(5.0)),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 10),
-                                    child: Icon(
-                                      FontAwesomeIcons.arrowRight,
-                                      size: 15,
-                                    ),
-                                  )
-                                ],
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  Container(
-                                    child: Center(
-                                      child: Text(
-                                        "Ressonância",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontFamily: "WorkSansMedium",
-                                            fontSize: 22,
-                                            color: Colors.black),
-                                      ),
-                                    ),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(5.0)),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 10),
-                                    child: Icon(
-                                      FontAwesomeIcons.arrowRight,
-                                      size: 15,
-                                    ),
-                                  )
-                                ],
-                              ),
-                              Container(
-                                child: Center(
-                                  child: Text(
-                                    "Raio-X",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: "WorkSansMedium",
-                                        fontSize: 22,
-                                        color: Colors.black),
-                                  ),
-                                ),
-                                decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(5.0)),
-                                ),
-                              ),
-                            ],
+                      padding: EdgeInsets.fromLTRB(20, 30, 20, 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: <Widget>[
+                          Icon(
+                            FontAwesomeIcons.mapMarkerAlt,
+                            color: Colors.white,
                           ),
-                        ),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                launchMap(endereco, context);
+                              },
+                              child: Text(
+                                "Como chegar á $name?",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: "WorkSansSemiBold",
+                                    fontSize: 18,
+                                    color: Colors.white),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     Padding(
                       padding:
-                          EdgeInsets.symmetric(horizontal: 80, vertical: 40),
+                          EdgeInsets.symmetric(horizontal: 80, vertical: 10),
                       child: Container(
                         height: 50,
                         child: Card(
@@ -275,299 +200,92 @@ class UBSDetails extends StatelessWidget {
                             )),
                       ),
                     ),
-                    Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Text(
-                        "Como chegar á $name?",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontFamily: "WorkSansSemiBold",
-                            fontSize: 18,
-                            color: Colors.white),
-                      ),
-                    ),
                   ],
-                ))),
-      ),
+                ),
+              ))),
     );
+  }
+
+  getRemedios() async {
+    QuerySnapshot querySnapshot = await Firestore.instance
+        .collection("ubs")
+        .document(place_id)
+        .collection("remedios")
+        .getDocuments();
+
+    return querySnapshot.documents;
+  }
+
+  getExames() async {
+    QuerySnapshot querySnapshot = await Firestore.instance
+        .collection("ubs")
+        .document(place_id)
+        .collection("exames_especialidades")
+        .getDocuments();
+
+    return querySnapshot.documents;
+  }
+
+  launchMap(String address, BuildContext context) async {
+    String googleURL =
+        "https://www.google.com/maps/search/?api=1&query=$address";
+    String appleURL = "https:///maps.apple.com/?sll=$address";
+
+    if (await canLaunch(googleURL)) {
+      await launch(googleURL);
+    } else if (await canLaunch(appleURL)) {
+      await launch(appleURL);
+    } else {
+      Flushbar(
+        animationDuration: Duration(milliseconds: 500),
+        icon: Icon(
+          FontAwesomeIcons.exclamation,
+          color: Colors.white,
+          size: 26,
+        ),
+        backgroundColor: Colors.red,
+        flushbarStyle: FlushbarStyle.GROUNDED,
+        messageText: Text(
+          "Não foi possível abrir o mapa",
+          textAlign: TextAlign.center,
+          style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontFamily: "WorkSansSemiBold"),
+        ),
+        duration: Duration(seconds: 2),
+        flushbarPosition: FlushbarPosition.TOP,
+      ).show(context);
+    }
   }
 }
 
-/*
-Column(
-                  children: <Widget>[
-                    Padding(
-                      padding: EdgeInsets.only(top: 10, bottom: 80),
-                      child: Text(
-                        name,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontFamily: "WorkSansBold",
-                            fontSize: 28,
-                            color: Colors.white),
-                      ),
-                    ),
-                    Text(
-                      "Especialidades",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontFamily: "WorkSansMedium",
-                          fontSize: 22,
-                          color: Colors.white),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(top: 20),
-                      child: Container(
-                        width: 300,
-                        height: 100,
-                        child: Card(
-                          elevation: 11,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          child: PageView(
-                            scrollDirection: Axis.vertical,
-                            children: <Widget>[
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  Container(
-                                    child: Center(
-                                      child: Text(
-                                        "Odontologia",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontFamily: "WorkSansMedium",
-                                            fontSize: 22,
-                                            color: Colors.black),
-                                      ),
-                                    ),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(5.0)),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 10),
-                                    child: Icon(
-                                      FontAwesomeIcons.arrowDown,
-                                      size: 15,
-                                    ),
-                                  )
-                                ],
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  Container(
-                                    child: Center(
-                                      child: Text(
-                                        "Pediatria",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontFamily: "WorkSansMedium",
-                                            fontSize: 22,
-                                            color: Colors.black),
-                                      ),
-                                    ),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(5.0)),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 10),
-                                    child: Icon(
-                                      FontAwesomeIcons.arrowDown,
-                                      size: 15,
-                                    ),
-                                  )
-                                ],
-                              ),
-                              Container(
-                                child: Center(
-                                  child: Text(
-                                    "Fonoaudiologia",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: "WorkSansMedium",
-                                        fontSize: 22,
-                                        color: Colors.black),
-                                  ),
-                                ),
-                                decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(5.0)),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(top: 50),
-                      child: Text(
-                        "Exames",
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontFamily: "WorkSansMedium",
-                            fontSize: 22,
-                            color: Colors.white),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(top: 20),
-                      child: Container(
-                        width: 300,
-                        height: 100,
-                        child: Card(
-                          elevation: 11,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          child: PageView(
-                            scrollDirection: Axis.horizontal,
-                            children: <Widget>[
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  Container(
-                                    child: Center(
-                                      child: Text(
-                                        "Hepatite B",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontFamily: "WorkSansMedium",
-                                            fontSize: 22,
-                                            color: Colors.black),
-                                      ),
-                                    ),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(5.0)),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 10),
-                                    child: Icon(
-                                      FontAwesomeIcons.arrowRight,
-                                      size: 15,
-                                    ),
-                                  )
-                                ],
-                              ),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: <Widget>[
-                                  Container(
-                                    child: Center(
-                                      child: Text(
-                                        "Ressonância",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontFamily: "WorkSansMedium",
-                                            fontSize: 22,
-                                            color: Colors.black),
-                                      ),
-                                    ),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.all(
-                                          Radius.circular(5.0)),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: EdgeInsets.only(left: 10),
-                                    child: Icon(
-                                      FontAwesomeIcons.arrowRight,
-                                      size: 15,
-                                    ),
-                                  )
-                                ],
-                              ),
-                              Container(
-                                child: Center(
-                                  child: Text(
-                                    "Raio-X",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: "WorkSansMedium",
-                                        fontSize: 22,
-                                        color: Colors.black),
-                                  ),
-                                ),
-                                decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(5.0)),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding:
-                          EdgeInsets.symmetric(horizontal: 80, vertical: 60),
-                      child: Container(
-                        height: 50,
-                        child: Card(
-                            elevation: 11,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8)),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                Padding(
-                                  padding: EdgeInsets.only(right: 10),
-                                  child: Icon(
-                                    FontAwesomeIcons.star,
-                                    color: Colors.amber,
-                                  ),
-                                ),
-                                Padding(
-                                  padding: EdgeInsets.only(left: 10),
-                                  child: Text(
-                                    "Favoritar UBS",
-                                    style: TextStyle(
-                                        fontFamily: "WorkSansMedium",
-                                        fontSize: 22),
-                                  ),
-                                )
-                              ],
-                            )),
-                      ),
-                    )
-                  ],
-                )
+class CardRemedios extends StatelessWidget {
+  final Map<String, dynamic> data;
 
- */
+  CardRemedios(this.data);
 
-/*
-NestedScrollView(
-            headerSliverBuilder:
-                (BuildContext context, bool innerBoxIsScrolled) {
-              return <Widget>[
-                SliverAppBar(
-                  elevation: 6,
-                  backgroundColor: Theme.ColorsTheme.primaryColor,
-                  expandedHeight: 80,
-                  pinned: true,
-                  flexibleSpace: FlexibleSpaceBar(
-                    centerTitle: true,
-                    title: Text(
-                      "Farmácias parceiras",
-                      style: TextStyle(
-                        fontFamily: "WorkSansRegular",
-                        color: Colors.white,
-                        fontSize: 18.0,
-                      ),
-                    ),
-                    titlePadding: EdgeInsets.only(bottom: 20),
-                  ),
-                ),
-              ];
-            },
-            body: 
-            ))
-
- */
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: <Widget>[
+        Padding(
+          padding: EdgeInsets.all(20),
+          child: Text(
+            data["name"],
+            style: TextStyle(
+              fontFamily: "WorkSansMedium",
+              fontSize: 20,
+            ),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.all(20),
+          child: data["tem"] == "false"
+              ? Icon(FontAwesomeIcons.thumbsDown)
+              : Icon(FontAwesomeIcons.thumbsUp),
+        )
+      ],
+    );
+  }
+}

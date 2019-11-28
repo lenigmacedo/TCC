@@ -215,18 +215,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                   child: ListTile(
                                     title: Padding(
                                       padding: EdgeInsets.only(bottom: 8),
-                                      child: GestureDetector(
-                                        onTap: () {
-                                          print(f.id);
-                                          print(f.name);
-                                        },
-                                        child: Text(
-                                          f.name,
-                                          style: TextStyle(
-                                              fontFamily: "WorkSansMedium",
-                                              fontSize: 20,
-                                              color: Colors.black),
-                                        ),
+                                      child: Text(
+                                        f.name,
+                                        style: TextStyle(
+                                            fontFamily: "WorkSansMedium",
+                                            fontSize: 20,
+                                            color: Colors.black),
                                       ),
                                     ),
                                     subtitle: Text(f.vicinity,
@@ -253,8 +247,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                       builder: (context) =>
                                                           UBSDetails(
                                                               f.name,
-                                                              f.id,
-                                                              f.vicinity)));
+                                                              f.vicinity,
+                                                              f.id)));
                                             },
                                             child: Text(
                                               "Remédios e Especialidades",
@@ -394,10 +388,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                             MaterialPageRoute(
                                                 builder: (context) =>
                                                     UBSDetails(
-                                                      snap.data["name"],
-                                                      snap.data["id"],
-                                                      snap.data["vicinity"],
-                                                    )));
+                                                        snap.data["name"],
+                                                        snap.data["vicinity"],
+                                                        snap.data[
+                                                            "place_id"])));
                                       },
                                       child: Container(
                                         margin:
